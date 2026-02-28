@@ -30,25 +30,72 @@
         }
 
         @keyframes fly {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(40px, -10px) rotate(2deg); }
-            50% { transform: translate(80px, 0) rotate(-1deg); }
-            75% { transform: translate(40px, 8px) rotate(1deg); }
-            100% { transform: translate(0, 0) rotate(0deg); }
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(40px, -10px) rotate(2deg);
+            }
+
+            50% {
+                transform: translate(80px, 0) rotate(-1deg);
+            }
+
+            75% {
+                transform: translate(40px, 8px) rotate(1deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
         }
 
         @keyframes flyReverse {
-            0% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
-            25% { transform: translate(-40px, -8px) scaleX(-1) rotate(-2deg); }
-            50% { transform: translate(-80px, 4px) scaleX(-1) rotate(1deg); }
-            75% { transform: translate(-40px, 6px) scaleX(-1) rotate(-1deg); }
-            100% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
+            0% {
+                transform: translate(0, 0) scaleX(-1) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(-40px, -8px) scaleX(-1) rotate(-2deg);
+            }
+
+            50% {
+                transform: translate(-80px, 4px) scaleX(-1) rotate(1deg);
+            }
+
+            75% {
+                transform: translate(-40px, 6px) scaleX(-1) rotate(-1deg);
+            }
+
+            100% {
+                transform: translate(0, 0) scaleX(-1) rotate(0deg);
+            }
         }
 
-        .bird1 { top: 10%; left: -5%; animation-duration: 25s; }
-        .bird2 { top: 25%; right: -5%; animation: flyReverse 28s infinite; }
-        .bird3 { bottom: 15%; left: -8%; animation-duration: 32s; }
-        .bird4 { bottom: 30%; right: -6%; animation: flyReverse 26s infinite; }
+        .bird1 {
+            top: 10%;
+            left: -5%;
+            animation-duration: 25s;
+        }
+
+        .bird2 {
+            top: 25%;
+            right: -5%;
+            animation: flyReverse 28s infinite;
+        }
+
+        .bird3 {
+            bottom: 15%;
+            left: -8%;
+            animation-duration: 32s;
+        }
+
+        .bird4 {
+            bottom: 30%;
+            right: -6%;
+            animation: flyReverse 26s infinite;
+        }
 
         /* Clouds */
         .cloud {
@@ -114,7 +161,7 @@
             background: white;
             padding: 4px 16px;
             border-radius: 40px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
             border: 1px solid #b0d4f0;
             color: #2c7da0;
         }
@@ -169,7 +216,7 @@
             border-radius: 40px;
             font-size: 0.95rem;
             font-weight: 500;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 4px 10px rgba(0, 70, 120, 0.2);
             transition: all 0.2s;
         }
@@ -260,7 +307,7 @@
             font-size: 0.95rem;
             font-weight: 500;
             white-space: nowrap;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .view-public-link:hover {
@@ -611,6 +658,7 @@
             .posts-grid {
                 grid-template-columns: 1fr;
             }
+
             .no-posts {
                 grid-column: span 1;
             }
@@ -620,16 +668,19 @@
             .container {
                 flex-direction: column;
             }
+
             .sidebar {
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid rgba(100, 180, 230, 0.3);
             }
+
             .dashboard-header {
                 margin: 15px 15px 0;
                 padding: 12px 15px;
                 flex-wrap: wrap;
             }
+
             .feed-content {
                 padding: 15px;
             }
@@ -653,22 +704,29 @@
         <div class="sidebar">
             <div class="profile-box">
                 <img src="<%= profile && profile.profile_image ? '/uploads/' + profile.profile_image : '/images/default-avatar.svg' %>"
-                    alt="Profile" 
-                    onerror="this.src='/images/default-avatar.svg'" />
+                    alt="Profile" onerror="this.src='/images/default-avatar.svg'" />
 
-                <h3><%= user ? user.username : 'Username' %></h3>
-                
+                <h3>
+                    <%= user ? user.username : 'Username' %>
+                </h3>
+
                 <div class="profile-stats">
                     <div class="stat-item">
-                        <div class="stat-value"><%= user ? user.posts_count || 0 : 0 %></div>
+                        <div class="stat-value">
+                            <%= user ? user.posts_count || 0 : 0 %>
+                        </div>
                         <div class="stat-label">Posts</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value"><%= user ? user.followers_count || 0 : 0 %></div>
+                        <div class="stat-value">
+                            <%= user ? user.followers_count || 0 : 0 %>
+                        </div>
                         <div class="stat-label">Followers</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value"><%= user ? user.following_count || 0 : 0 %></div>
+                        <div class="stat-value">
+                            <%= user ? user.following_count || 0 : 0 %>
+                        </div>
                         <div class="stat-label">Following</div>
                     </div>
                 </div>
@@ -691,15 +749,16 @@
                 <div class="top-right-actions">
                     <div class="notif-wrapper">
                         <button type="button" class="notif-trigger" id="notif-trigger">
-                            🔔 
-                            <% 
-                                const unreadCount = typeof unreadNotifications !== 'undefined' ? unreadNotifications : 0;
-                                if (unreadCount > 0) { 
-                            %>
-                                <span id="notif-badge" class="notif-badge"><%= unreadCount %></span>
-                            <% } else { %>
-                                <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
-                            <% } %>
+                            🔔
+                            <% const unreadCount=typeof unreadNotifications !=='undefined' ? unreadNotifications : 0; if
+                                (unreadCount> 0) {
+                                %>
+                                <span id="notif-badge" class="notif-badge">
+                                    <%= unreadCount %>
+                                </span>
+                                <% } else { %>
+                                    <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
+                                    <% } %>
                         </button>
                         <div class="notif-dropdown" id="notif-dropdown">
                             <div class="notif-dropdown-header">Notifications</div>
@@ -713,98 +772,112 @@
 
             <!-- POSTS - scrollable area below header -->
             <div class="feed-content">
-            <% if (!posts || posts.length === 0) { %>
-                <div class="no-posts">
-                    <h3>No posts yet</h3>
-                    <p>Follow people to see their posts here.</p>
-                    <div class="bird-decoration">
-                        <span>🕊️</span> <span>🪹</span> <span>🕊️</span>
+                <% if (!posts || posts.length===0) { %>
+                    <div class="no-posts">
+                        <h3>No posts yet</h3>
+                        <p>Follow people to see their posts here.</p>
+                        <div class="bird-decoration">
+                            <span>🕊️</span> <span>🪹</span> <span>🕊️</span>
+                        </div>
                     </div>
-                </div>
-            <% } else { %>
-                <div class="posts-grid">
-                    <% posts.forEach(function(post) { %>
-                        <div class="post">
-                            <div class="post-header">
-                                <img src="<%= post.user_profile_image ? '/uploads/' + post.user_profile_image : '/images/default-avatar.svg' %>" 
-                                     alt="<%= post.username %>"
-                                     class="post-avatar"
-                                     onerror="this.src='/images/default-avatar.svg'">
-                                <div class="post-user-info">
-                                    <div class="post-username"><%= post.username || 'User' %></div>
-                                    <div class="post-time">
-                                        <% 
-                                            const date = new Date(post.created_at);
-                                            const now = new Date();
-                                            const diff = now - date;
-                                            if (diff < 60000) { %>Just now<% }
-                                            else if (diff < 3600000) { %><%= Math.floor(diff/60000) %>m ago<% }
-                                            else if (diff < 86400000) { %><%= Math.floor(diff/3600000) %>h ago<% }
-                                            else { %><%= date.toLocaleDateString() %><% }
-                                        %>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="post-content"><%= post.content || '' %></div>
-
-                            <% if (post.image) { %>
-                                <div class="post-image-container">
-                                    <img src="/uploads/<%= post.image %>" 
-                                         alt="Post image"
-                                         loading="lazy"
-                                         onerror="this.src='/images/default-post.png'">
-                                </div>
-                            <% } %>
-
-                            <div class="post-actions">
-                                <form action="/posts/<%= post.post_id %>/like" method="POST">
-                                    <button type="submit">
-                                        <% if (post.liked_by_me) { %>
-                                            ❤️ <span><%= post.likes_count || 0 %></span>
-                                        <% } else { %>
-                                            🤍 <span><%= post.likes_count || 0 %></span>
-                                        <% } %>
-                                    </button>
-                                </form>
-                            </div>
-
-                            <div class="comments-section">
-                                <% const comments = (commentsByPost && commentsByPost[post.post_id]) || []; %>
-                                <% if (comments.length > 0) { %>
-                                    <% comments.slice(0, 2).forEach(function(c) { %>
-                                        <div class="comment">
-                                            <img src="<%= c.user_profile_image ? '/uploads/' + c.user_profile_image : '/images/default-avatar.svg' %>" 
-                                                 alt="<%= c.username %>"
-                                                 class="comment-avatar"
-                                                 onerror="this.src='/images/default-avatar.svg'">
-                                            <div class="comment-content">
-                                                <span class="comment-username"><%= c.username || 'User' %></span>
-                                                <span class="comment-text"><%= c.comment_text || '' %></span>
+                    <% } else { %>
+                        <div class="posts-grid">
+                            <% posts.forEach(function(post) { %>
+                                <div class="post">
+                                    <div class="post-header">
+                                        <img src="<%= post.user_profile_image ? '/uploads/' + post.user_profile_image : '/images/default-avatar.svg' %>"
+                                            alt="<%= post.username %>" class="post-avatar"
+                                            onerror="this.src='/images/default-avatar.svg'">
+                                        <div class="post-user-info">
+                                            <div class="post-username">
+                                                <%= post.username || 'User' %>
+                                            </div>
+                                            <div class="post-time">
+                                                <% const date=new Date(post.created_at); const now=new Date(); const
+                                                    diff=now - date; if (diff < 60000) { %>Just now<% } else if (diff <
+                                                        3600000) { %>
+                                                        <%= Math.floor(diff/60000) %>m ago<% } else if (diff < 86400000)
+                                                                { %>
+                                                                <%= Math.floor(diff/3600000) %>h ago<% } else { %>
+                                                                        <%= date.toLocaleDateString() %>
+                                                                            <% } %>
                                             </div>
                                         </div>
-                                    <% }); %>
-                                    <% if (comments.length > 2) { %>
-                                        <div style="text-align: center; font-size: 0.8rem; color: #2d6a8f; margin: 5px 0;">
-                                            +<%= comments.length - 2 %> more comments
-                                        </div>
-                                    <% } %>
-                                <% } %>
+                                    </div>
 
-                                <div class="add-comment">
-                                    <form action="/posts/<%= post.post_id %>/comment" method="POST">
-                                        <input type="text" name="comment_text" placeholder="Add a comment..." autocomplete="off" />
-                                    </form>
+                                    <div class="post-content">
+                                        <%= post.content || '' %>
+                                    </div>
+
+                                    <% if (post.image) { %>
+                                        <div class="post-image-container">
+                                            <img src="/uploads/<%= post.image %>" alt="Post image" loading="lazy"
+                                                onerror="this.src='/images/default-post.png'">
+                                        </div>
+                                        <% } %>
+
+                                            <div class="post-actions">
+                                                <form action="/posts/<%= post.post_id %>/like" method="POST">
+                                                    <button type="submit">
+                                                        <% if (post.liked_by_me) { %>
+                                                            ❤️ <span>
+                                                                <%= post.likes_count || 0 %>
+                                                            </span>
+                                                            <% } else { %>
+                                                                🤍 <span>
+                                                                    <%= post.likes_count || 0 %>
+                                                                </span>
+                                                                <% } %>
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <div class="comments-section">
+                                                <% const comments=(commentsByPost && commentsByPost[post.post_id]) ||
+                                                    []; %>
+                                                    <% if (comments.length> 0) { %>
+                                                        <% comments.slice(0, 2).forEach(function(c) { %>
+                                                            <div class="comment">
+                                                                <img src="<%= c.user_profile_image ? '/uploads/' + c.user_profile_image : '/images/default-avatar.svg' %>"
+                                                                    alt="<%= c.username %>" class="comment-avatar"
+                                                                    onerror="this.src='/images/default-avatar.svg'">
+                                                                <div class="comment-content">
+                                                                    <span class="comment-username">
+                                                                        <%= c.username || 'User' %>
+                                                                    </span>
+                                                                    <span class="comment-text">
+                                                                        <%= c.comment_text || '' %>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <% }); %>
+                                                                <% if (comments.length> 2) { %>
+                                                                    <div
+                                                                        style="text-align: center; font-size: 0.8rem; color: #2d6a8f; margin: 5px 0;">
+                                                                        +<%= comments.length - 2 %> more comments
+                                                                    </div>
+                                                                    <% } %>
+                                                                        <% } %>
+
+                                                                            <div class="add-comment">
+                                                                                <form
+                                                                                    action="/posts/<%= post.post_id %>/comment"
+                                                                                    method="POST">
+                                                                                    <input type="text"
+                                                                                        name="comment_text"
+                                                                                        placeholder="Add a comment..."
+                                                                                        autocomplete="off" />
+                                                                                </form>
+                                                                            </div>
+                                            </div>
                                 </div>
-                            </div>
+                                <% }); %>
+
+                                    <div class="bird-decoration">
+                                        <span>🕊️</span> <span>🪺</span> <span>🕊️</span>
+                                    </div>
                         </div>
-                    <% }); %>
-                    
-                    <div class="bird-decoration">
-                        <span>🕊️</span> <span>🪺</span> <span>🕊️</span>
-                    </div>
-                </div>
-            <% } %>
+                        <% } %>
             </div>
         </div>
     </div>
@@ -869,7 +942,7 @@
         })();
 
         // Notifications
-        (function() {
+        (function () {
             const trigger = document.getElementById("notif-trigger");
             const dropdown = document.getElementById("notif-dropdown");
             const list = document.getElementById("notif-list");
@@ -889,7 +962,7 @@
                             badge.style.display = "none";
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => { });
             }
 
             function formatTimeAgo(d) {
@@ -928,7 +1001,7 @@
                             </a>`;
                         }).join("");
                         list.innerHTML = html;
-                        
+
                         if (unreadIds.length > 0) {
                             fetch("/notifications/mark-read", {
                                 method: "POST",
@@ -942,18 +1015,18 @@
                     });
             }
 
-            trigger.addEventListener("click", function(e) {
+            trigger.addEventListener("click", function (e) {
                 e.stopPropagation();
                 const vis = dropdown.style.display === "block";
                 dropdown.style.display = vis ? "none" : "block";
                 if (!vis) loadNotifications();
             });
 
-            document.addEventListener("click", function() {
+            document.addEventListener("click", function () {
                 dropdown.style.display = "none";
             });
 
-            dropdown.addEventListener("click", function(e) { e.stopPropagation(); });
+            dropdown.addEventListener("click", function (e) { e.stopPropagation(); });
 
             fetchUnreadCount();
         })();

@@ -1,26 +1,388 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Login</title>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BirdSky · refined login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #b7dff7 0%, #c6e9ff 40%, #d4f0ff 70%, #b3d5e7 100%);
+            font-family: 'Times New Roman', Times, serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ----- FLYING BIRDS – darker (opacity increased from 0.2 to 0.35) ----- */
+        .bird {
+            position: absolute;
+            color: #1a3a3a; /* darker bird color */
+            font-size: 2.2rem;
+            opacity: 0.35; /* more visible, darker appearance */
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+            animation: fly 20s infinite linear;
+            white-space: nowrap;
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(40px, -15px) rotate(2deg); }
+            50% { transform: translate(80px, -5px) rotate(-1deg); }
+            75% { transform: translate(40px, 8px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes flyReverse {
+            0% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
+            25% { transform: translate(-40px, -12px) scaleX(-1) rotate(-2deg); }
+            50% { transform: translate(-80px, -8px) scaleX(-1) rotate(1deg); }
+            75% { transform: translate(-40px, 6px) scaleX(-1) rotate(-1deg); }
+            100% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
+        }
+
+        .bird1 { top: 15%; left: -5%; animation-duration: 25s; font-size: 2.2rem; }
+        .bird2 { top: 30%; right: -5%; animation: flyReverse 28s infinite; font-size: 1.9rem; }
+        .bird3 { top: 60%; left: -8%; animation-duration: 32s; font-size: 2.5rem; }
+        .bird4 { bottom: 20%; right: -6%; animation: flyReverse 26s infinite; font-size: 2rem; }
+        .bird5 { top: 45%; left: 10%; animation-duration: 35s; opacity: 0.3; font-size: 1.8rem; } /* slightly darker for this one too */
+
+        /* ----- CLOUDS – exactly as in home page ----- */
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 120px;
+            filter: blur(40px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .cloud1 {
+            width: 500px;
+            height: 120px;
+            top: 5%;
+            right: -100px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .cloud2 {
+            width: 600px;
+            height: 150px;
+            bottom: 10%;
+            left: -150px;
+            background: rgba(240, 250, 255, 0.6);
+        }
+
+        .cloud3 {
+            width: 350px;
+            height: 90px;
+            top: 40%;
+            left: 15%;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* ----- main card – elevated glass with refined radius ----- */
+        .card {
+            position: relative;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 56px;
+            padding: 52px 60px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 40px 60px -24px rgba(0, 45, 45, 0.3);
+            max-width: 520px;
+            width: 90%;
+        }
+
+        /* ----- BIG logo in LEFT corner ----- */
+        .corner-logo {
+            position: absolute;
+            top: 28px;
+            left: 38px;
+            z-index: 40;
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 15px 25px rgba(0, 35, 35, 0.25));
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            animation: refinedFloat 6s infinite ease-in-out;
+        }
+
+        @keyframes refinedFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-8px) scale(1.02); }
+            80% { transform: translateY(-3px) scale(1.01); }
+        }
+
+        .corner-logo img {
+            width: 100%;
+            height: auto;
+            display: block;
+            mix-blend-mode: multiply;
+            border-radius: 24px;
+        }
+
+        /* ----- refined welcome message – darker text ----- */
+        .signin-message {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.3rem;
+            color: #022b2b; /* darker */
+            margin-bottom: 44px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.25);
+            display: inline-block;
+            padding: 14px 52px;
+            border-radius: 70px;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 22px rgba(25, 70, 70, 0.15);
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 4px rgba(255,255,255,0.6);
+        }
+
+        /* ----- form – darker text throughout ----- */
+        .login-form {
+            margin: 20px 0 25px;
+        }
+
+        .input-group {
+            margin-bottom: 32px;
+            text-align: left;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #011e1e; /* darker */
+            margin-bottom: 10px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            padding-left: 18px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 20px 64px 20px 28px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1.5px solid rgba(255, 255, 255, 0.9);
+            border-radius: 60px;
+            outline: none;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 10px 24px -12px rgba(10, 60, 60, 0.3);
+            transition: all 0.25s ease;
+            color: #011010; /* darker input text */
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: 500;
+        }
+
+        .input-wrapper input:focus {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: #a5d6d6;
+            box-shadow: 0 12px 28px -10px #46999980;
+            transform: scale(1.01);
+        }
+
+        .input-wrapper input::placeholder {
+            color: #2b5555; /* darker placeholder */
+            font-weight: 400;
+            font-size: 1.05rem;
+            opacity: 0.9;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* ----- refined eye toggle (🙈 / 👁️) ----- */
+        .toggle-password {
+            position: absolute;
+            right: 18px;
+            background: rgba(255, 250, 250, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #0d3d3d; /* darker */
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            z-index: 5;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .toggle-password:hover {
+            background: rgba(255, 255, 255, 0.7);
+            color: #011111;
+            transform: scale(1.1) rotate(4deg);
+            border-color: rgba(200, 230, 230, 0.9);
+        }
+
+        /* ----- login button – richer gradient, refined font weight ----- */
+        .login-submit {
+            background: linear-gradient(150deg, #166a7a, #0a5265);
+            border: none;
+            border-radius: 60px;
+            padding: 20px 40px;
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 20px 32px -16px rgba(8, 70, 90, 0.6);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+            margin-top: 20px;
+            font-family: 'Times New Roman', Times, serif;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .login-submit:hover {
+            background: linear-gradient(150deg, #1c7e90, #116c82);
+            box-shadow: 0 28px 40px -16px #0d5f70;
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .login-submit:active {
+            transform: translateY(1px);
+            box-shadow: 0 16px 24px -12px #0a5265;
+        }
+
+        /* ----- subtle decorative elements ----- */
+        .decor-bird {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.2;
+            color: #134343; /* darker */
+            pointer-events: none;
+            z-index: 15;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        }
+
+        .decor1 { top: -18px; right: 26px; transform: rotate(6deg); }
+        .decor2 { bottom: -22px; left: 32px; transform: rotate(-4deg); }
+
+        .extra-faint-bird {
+            position: absolute;
+            bottom: 10%;
+            right: 8%;
+            font-size: 2.2rem;
+            opacity: 0.12;
+            transform: rotate(8deg);
+            pointer-events: none;
+            z-index: 0;
+            color: #1a3a3a;
+        }
+
+        /* ----- responsive refinements ----- */
+        @media (max-width: 720px) {
+            .corner-logo { width: 160px; top: 20px; left: 20px; }
+            .card { padding: 44px 36px; }
+            .signin-message { font-size: 2rem; padding: 12px 40px; }
+            .login-submit { font-size: 1.8rem; padding: 18px 32px; }
+        }
+
+        @media (max-width: 500px) {
+            .corner-logo { width: 130px; }
+            .signin-message { font-size: 1.7rem; padding: 10px 30px; }
+            .input-wrapper input { padding: 18px 54px 18px 22px; }
+            .toggle-password { width: 42px; height: 42px; font-size: 1.8rem; right: 12px; }
+        }
+    </style>
+</head>
 <body>
 
-    <h2>Login</h2>
+    <!-- soft clouds -->
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
 
-            <form action="/login" method="POST">
+    <!-- background birds – darker and more visible now -->
+    <div class="bird bird1">🕊️</div>
+    <div class="bird bird2">🕊️</div>
+    <div class="bird bird3">🕊️</div>
+    <div class="bird bird4">🕊️</div>
+    <div class="bird bird5">🕊️</div>
 
-                <input type="text" name="login" placeholder="Username or Email" required />
-                <br><br>
+    <!-- LARGE LOGO at LEFT TOP -->
+    <div class="corner-logo">
+        <img src="/images/Gemini_Generated_Image_cu81zrcu81zrcu81.png" alt="BirdSky Logo" 
+             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 150 150\'%3E%3Ccircle cx=\'75\' cy=\'75\' r=\'70\' fill=\'%23f2b0c0\' opacity=\'0.9\'/%3E%3Ctext x=\'75\' y=\'105\' font-size=\'90\' text-anchor=\'middle\' fill=\'%23ffffff\' font-family=\'Times New Roman\'%3E🕊️%3C/text%3E%3C/svg%3E';">
+    </div>
 
-                <input type="password" name="password" placeholder="Password" required />
-                <br><br>
+    <!-- main login card -->
+    <div class="card">
+        <!-- welcome heading – darker text -->
+        <div class="signin-message">Welcome Back</div>
 
-                <button type="submit">Login</button>
+        <!-- login form with 🙈 / 👁️ toggle -->
+        <form action="/login" method="POST" class="login-form" id="loginForm">
+            <div class="input-group">
+                <label for="username">Username or email</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" name="login" placeholder="name@example.com" required />
+                </div>
+            </div>
 
-            </form>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="··········" required />
+                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">👁️‍🗨️</button>
+                </div>
+            </div>
 
+            <button type="submit" class="login-submit">Sign in</button>
+        </form>
+
+        <!-- subtle decorative birds -->
+        <div class="decor-bird decor1">🕊️</div>
+        <div class="decor-bird decor2">🕊️</div>
+    </div>
+
+    <!-- distant faint bird -->
+    <div class="extra-faint-bird">🕊️</div>
+
+    <script>
+        (function() {
+            const toggleBtn = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function() {
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    
+                    // toggle between 🙈 (hidden) and 👁️ (visible)
+                    this.textContent = isPassword ? '👁️‍🗨️' : '👁️‍🗨️';
+                });
+            }
+        })();
+    </script>
+   
 </body>
-
 </html>

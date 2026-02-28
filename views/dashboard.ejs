@@ -188,7 +188,7 @@
             overflow: hidden;
         }
 
-        /* HEADER - always at top, search left, notifications right */
+        /* HEADER - always at top, search left, notifications right; high z-index so dropdowns appear above posts */
         .dashboard-header {
             flex-shrink: 0;
             display: flex;
@@ -202,6 +202,8 @@
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.7);
             box-shadow: 0 4px 15px rgba(0, 70, 100, 0.1);
+            position: relative;
+            z-index: 100;
         }
 
         .search-row {
@@ -246,7 +248,7 @@
             overflow-y: auto;
             box-shadow: 0 10px 25px rgba(0, 70, 110, 0.15);
             display: none;
-            z-index: 9998;
+            z-index: 1000;
         }
 
         .view-public-link {
@@ -310,12 +312,14 @@
             border: 2px solid white;
         }
 
-        /* Scrollable posts area - below header */
+        /* Scrollable posts area - below header; lower z-index so header dropdowns appear above */
         .feed-content {
             flex: 1;
             overflow-y: auto;
             padding: 10px 25px 25px;
             min-height: 0;
+            position: relative;
+            z-index: 1;
         }
 
         /* POSTS GRID - Side by side */

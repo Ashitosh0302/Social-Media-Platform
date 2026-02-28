@@ -65,7 +65,7 @@ async function dashboard(req, res)
                     p.post_id,
                     p.user_id,
                     u.username,
-                    pr.profile_image AS user_profile_image,
+                    MAX(pr.profile_image) AS user_profile_image,
                     p.content,
                     p.image,
                     p.created_at,
@@ -85,7 +85,6 @@ async function dashboard(req, res)
                     p.post_id,
                     p.user_id,
                     u.username,
-                    pr.profile_image,
                     p.content,
                     p.image,
                     p.created_at

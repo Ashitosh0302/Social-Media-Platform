@@ -1,0 +1,270 @@
+const db = require("../config/db");
+
+function getCounts(userId, cb) {
+    const postsCountSql = "SELECT COUNT(*) AS posts_count FROM posts WHERE user_id = ?";
+    const followersCountSql = "SELECT COUNT(*) AS followers_count FROM followers WHERE following_id = ?";
+    const followingCountSql = "SELECT COUNT(*) AS following_count FROM followers WHERE follower_id = ?";
+
+    db.query(postsCountSql, [userId], (err1, r1) => {
+        if (err1) return cb(err1);
+        const posts_count = r1 && r1[0] ? r1[0].posts_count : 0;
+
+        db.query(followersCountSql, [userId], (err2, r2) => {
+            if (err2) return cb(err2);
+            const followers_count = r2 && r2[0] ? r2[0].followers_count : 0;
+
+            db.query(followingCountSql, [userId], (err3, r3) => {
+                if (err3) return cb(err3);
+                const following_count = r3 && r3[0] ? r3[0].following_count : 0;
+
+                cb(null, { posts_count, followers_count, following_count });
+            });
+        });
+    });
+}
+
+// render own profile page
+async function profilePage(req, res) {
+    const user_id = req.user.id;
+
+    const sql = `
+        SELECT users.username, profiles.*
+        FROM users
+        LEFT JOIN profiles ON users.id = profiles.user_id
+        WHERE users.id = ?
+    `;
+
+    db.query(sql, [user_id], (err, result) => {
+        if (err) {
+            console.log("Profile page query error:", err);
+            return res.send("Failed to load profile");
+        }
+
+        const row = result.length > 0 ? result[0] : null;
+
+        getCounts(user_id, (countErr, counts) => {
+            if (countErr) {
+                console.log("Profile counts error:", countErr);
+                return res.send("Failed to load profile");
+            }
+
+            const profile = row
+                ? {
+                    profile_image: row.profile_image || "default.png",
+                    full_name: row.full_name || "",
+                    posts_count: counts.posts_count,
+                    followers_count: counts.followers_count,
+                    following_count: counts.following_count
+                }
+                : {
+                    profile_image: "default.png",
+                    full_name: "",
+                    posts_count: counts.posts_count,
+                    followers_count: counts.followers_count,
+                    following_count: counts.following_count
+                };
+
+            // profileUser represents the profile being viewed (here: the logged-in user)
+            const profileUser = {
+                id: req.user.id,
+                username: row && row.username ? row.username : req.user.username
+            };
+
+            res.render("profile", {
+                user: req.user,      // logged-in user (viewer)
+                profile,
+                profileUser,
+                isOwner: true,
+                isFollowing: false
+            });
+        });
+    });
+}
+
+// view another user's profile by id
+async function viewUserProfile(req, res) {
+    const targetUserId = req.params.id;
+
+    const sql = `
+        SELECT users.id, users.username, profiles.*
+        FROM users
+        LEFT JOIN profiles ON users.id = profiles.user_id
+        WHERE users.id = ?
+    `;
+
+    db.query(sql, [targetUserId], (err, result) => {
+        if (err) {
+            console.log("View user profile query error:", err);
+            return res.send("Failed to load user profile");
+        }
+
+        if (result.length === 0) {
+            return res.status(404).send("User not found");
+        }
+
+        const row = result[0];
+
+        const profileUser = {
+            id: row.id,
+            username: row.username
+        };
+
+        const isOwner = req.user && String(req.user.id) === String(row.id);
+
+        // follow status for viewer -> target
+        const followingSql = "SELECT id FROM followers WHERE follower_id = ? AND following_id = ? LIMIT 1";
+        db.query(followingSql, [req.user.id, row.id], (fErr, fRes) => {
+            if (fErr) {
+                console.log("Follow status error:", fErr);
+                return res.send("Failed to load user profile");
+            }
+
+            const isFollowing = (fRes || []).length > 0;
+
+            getCounts(row.id, (countErr, counts) => {
+                if (countErr) {
+                    console.log("Profile counts error:", countErr);
+                    return res.send("Failed to load user profile");
+                }
+
+                const profile = {
+                    profile_image: row.profile_image || "default.png",
+                    full_name: row.full_name || "",
+                    posts_count: counts.posts_count,
+                    followers_count: counts.followers_count,
+                    following_count: counts.following_count
+                };
+
+                res.render("profile", {
+                    user: req.user, // logged-in viewer
+                    profile,
+                    profileUser,
+                    isOwner,
+                    isFollowing
+                });
+            });
+        });
+    });
+}
+
+// follow/unfollow (toggle)
+async function toggleFollow(req, res) {
+    const follower_id = req.user.id;
+    const following_id = req.params.id;
+
+    if (String(follower_id) === String(following_id)) {
+        return res.redirect("/profile/" + follower_id);
+    }
+
+    const checkSql = "SELECT id FROM followers WHERE follower_id = ? AND following_id = ? LIMIT 1";
+    db.query(checkSql, [follower_id, following_id], (err, result) => {
+        if (err) {
+            console.log("Toggle follow check error:", err);
+            return res.redirect("/profile/" + following_id);
+        }
+
+        if ((result || []).length > 0) {
+            const delSql = "DELETE FROM followers WHERE follower_id = ? AND following_id = ?";
+            db.query(delSql, [follower_id, following_id], (err2) => {
+                if (err2) console.log("Unfollow error:", err2);
+                res.redirect("/profile/" + following_id);
+            });
+        } else {
+            const insSql = "INSERT INTO followers (follower_id, following_id) VALUES (?, ?)";
+            db.query(insSql, [follower_id, following_id], (err2) => {
+                if (err2) console.log("Follow insert error:", err2);
+                res.redirect("/profile/" + following_id);
+            });
+        }
+    });
+}
+
+// search users by username (for suggestions)
+async function searchUsers(req, res) {
+    let query = (req.query.q || req.query.query || "").trim();
+
+    if (query.length > 50) {
+        query = query.slice(0, 50);
+    }
+
+    if (!query) {
+        return res.json([]);
+    }
+
+    const sql = `
+        SELECT users.id,
+               users.username,
+               COALESCE(profiles.profile_image, 'default.png') AS profile_image
+        FROM users
+        LEFT JOIN profiles ON users.id = profiles.user_id
+        WHERE users.username LIKE ?
+        ORDER BY users.username
+        LIMIT 10
+    `;
+
+    db.query(sql, [`%${query}%`], (err, results) => {
+        if (err) {
+            console.log("Search users query error:", err);
+            return res.status(500).json({ error: "Failed to search users" });
+        }
+
+        const formatted = results.map((row) => ({
+            id: row.id,
+            username: row.username,
+            profile_image: row.profile_image || "default.png"
+        }));
+
+        res.json(formatted);
+    });
+}
+
+// update or insert profile image safely
+async function updateProfileImage(req, res) {
+
+    console.log("req.user.id:", req.user?.id);
+
+    const user_id = req.user.id;
+    const image = req.file && req.file.filename;
+
+    if (!image) {
+        return res.send("No image uploaded");
+    }
+
+    // Step 1: Check if user exists
+    const checkUserSql = "SELECT id FROM users WHERE id = ?";
+    db.query(checkUserSql, [user_id], (err, result) => {
+        if (err) {
+            console.log("Check user error:", err);
+            return res.send("DB error");
+        }
+
+        if (result.length === 0) {
+            return res.send("User does not exist");
+        }
+
+        // Step 2: UPSERT profile image
+        const sql = `
+            INSERT INTO profiles (user_id, profile_image)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE profile_image = VALUES(profile_image);
+        `;
+
+        db.query(sql, [user_id, image], (err) => {
+            if (err) {
+                console.log("Profile image save error:", err);
+                return res.send("Failed to save profile image");
+            }
+
+            res.redirect("/profile");
+        });
+    });
+}
+
+module.exports =
+{
+    profilePage,
+    viewUserProfile,
+    toggleFollow,
+    searchUsers,
+    updateProfileImage
+};

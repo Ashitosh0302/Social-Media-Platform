@@ -1,45 +1,51 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Register</title>
 </head>
+
 <body>
 
-<h2>User Registration</h2>
+    <h2>User Registration</h2>
 
-<form action="/register" method="POST">
+    <form action="/register" method="POST">
 
-    <label>Username</label><br>
-    <input type="text" name="username" required><br><br>
+        <label>Full Name</label><br>
+        <input type="text" name="full_name" required><br><br>
 
-    <label>Email</label><br>
-    <input type="email" name="email" required><br><br>
+        <label>Username</label><br>
+        <input type="text" name="username" required><br><br>
 
-    <label>Password</label><br>
-    <input type="password" name="password" required><br><br>
+        <label>Email</label><br>
+        <input type="email" name="email" required><br><br>
 
-    <label>Phone Number</label><br>
-    <input type="text" name="phone_number"><br><br>
+        <label>Password</label><br>
+        <input type="password" name="password" required><br><br>
 
-    <label>Date of Birth</label><br>
-    <input type="date" name="date_of_birth"><br><br>
+        <label>Phone Number</label><br>
+        <input type="text" name="phone_number"><br><br>
 
-    <label>Gender</label><br>
-    <select name="gender">
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-    </select><br><br>
+        <label>Date of Birth</label><br>
+        <input type="date" name="date_of_birth"><br><br>
 
-    <label>Account Type</label><br>
-    <select name="account_type" required>
-        <option value="public">Public</option>
-        <option value="private">Private</option>
-    </select><br><br>
+        <label>Gender</label><br>
+        <select name="gender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select><br><br>
 
-    <button type="submit">Register</button>
+        <label>Account Type</label><br>
+        <select name="account_type" required>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+        </select><br><br>
 
-</form>
+        <button type="submit">Register</button>
+
+    </form>
 
 </body>
+
 </html>

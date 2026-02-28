@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* LEFT SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: #ffffff;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+        }
+
+        .profile-box {
+            text-align: center;
+        }
+
+        .profile-box img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-box h3 {
+            margin: 10px 0 5px;
+        }
+
+        .profile-box a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #0095f6;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        /* FEED */
+        .feed {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .search-container {
+            max-width: 400px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-container input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 38px;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 100;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .search-result-item:hover {
+            background: #f5f5f5;
+        }
+
+        .search-result-item img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .search-empty {
+            padding: 8px 10px;
+            color: #777;
+        }
+
+        .post {
+            background: #ffffff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .post-meta {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .post-image {
+            margin-top: 10px;
+        }
+
+        .post-image img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
+
+        .post-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .post-actions form {
+            display: inline;
+        }
+
+        .post-actions button {
+            background: none;
+            border: none;
+            color: #0095f6;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .comments {
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+
+        .comment {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .comment strong {
+            margin-right: 4px;
+        }
+
+        .add-comment {
+            margin-top: 8px;
+        }
+
+        .add-comment input[type="text"] {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 13px;
+        }
+
+        .no-posts {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar">
+            <div class="profile-box">
+                <img src="/uploads/<%= profile.profile_image ? profile.profile_image : 'default.png' %>"
+                    alt="Profile" />
+
+                <h3>
+                    <%= user.username %>
+                </h3>
+
+                <a href="/profile">View Profile</a>
+            </div>
+        </div>
+
+        <!-- FEED SECTION -->
+        <div class="feed">
+
+            <!-- USER SEARCH BAR -->
+            <div class="search-container">
+                <input type="text" id="user-search" placeholder="Search users by username..." autocomplete="off" />
+                <div id="search-results" class="search-results"></div>
+            </div>
+
+            <% if (!posts || posts.length===0) { %>
+                <div class="no-posts">
+                    <h3>No posts yet</h3>
+                    <p>Follow people to see their posts here.</p>
+                </div>
+                <% } else { %>
+
+                    <% posts.forEach(post=> { %>
+                        <div class="post">
+                            <div class="post-header">
+                                <h4><%= post.username %></h4>
+                                <div class="post-meta">
+                                    <%= new Date(post.created_at).toLocaleString() %>
+                                </div>
+                            </div>
+
+                            <p><%= post.content %></p>
+
+                            <% if (post.image) { %>
+                                <div class="post-image">
+                                    <img src="/uploads/<%= post.image %>" alt="Post image">
+                                </div>
+                            <% } %>
+
+                            <div class="post-actions">
+                                <form action="/posts/<%= post.post_id %>/like" method="POST">
+                                    <button type="submit">
+                                        <% if (post.liked_by_me) { %>
+                                            Unlike
+                                        <% } else { %>
+                                            Like
+                                        <% } %>
+                                        (<%= post.likes_count || 0 %>)
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="comments">
+                                <% const comments = (commentsByPost && commentsByPost[post.post_id]) || []; %>
+                                <% if (comments.length > 0) { %>
+                                    <% comments.forEach(function(c) { %>
+                                        <div class="comment">
+                                            <strong><%= c.username %></strong> <%= c.comment_text %>
+                                        </div>
+                                    <% }); %>
+                                <% } %>
+
+                                <div class="add-comment">
+                                    <form action="/posts/<%= post.post_id %>/comment" method="POST">
+                                        <input type="text" name="comment_text" placeholder="Add a comment..." autocomplete="off" />
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <% }) %>
+
+                            <% } %>
+
+        </div>
+
+    </div>
+
+    <script>
+        (function () {
+            const searchInput = document.getElementById("user-search");
+            const resultsBox = document.getElementById("search-results");
+
+            if (!searchInput || !resultsBox) return;
+
+            let debounceTimeout = null;
+
+            function clearResults() {
+                resultsBox.innerHTML = "";
+                resultsBox.style.display = "none";
+            }
+
+            function renderResults(users) {
+                if (!users || users.length === 0) {
+                    resultsBox.innerHTML = '<div class="search-empty">No users found</div>';
+                    resultsBox.style.display = "block";
+                    return;
+                }
+
+                const html = users.map(user => `
+                    <a class="search-result-item" href="/profile/${user.id}">
+                        <img src="/uploads/${user.profile_image || 'default.png'}" alt="">
+                        <span>${user.username}</span>
+                    </a>
+                `).join("");
+
+                resultsBox.innerHTML = html;
+                resultsBox.style.display = "block";
+            }
+
+            searchInput.addEventListener("input", function () {
+                const query = this.value.trim();
+
+                clearTimeout(debounceTimeout);
+
+                if (!query) {
+                    clearResults();
+                    return;
+                }
+
+                debounceTimeout = setTimeout(() => {
+                    fetch(`/profile/search?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            renderResults(data);
+                        })
+                        .catch(err => {
+                            console.error("Search error:", err);
+                            resultsBox.innerHTML = '<div class="search-empty">Error searching</div>';
+                            resultsBox.style.display = "block";
+                        });
+                }, 300);
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!resultsBox.contains(e.target) && e.target !== searchInput) {
+                    clearResults();
+                }
+            });
+        })();
+    </script>
+
+</body>
+
+</html>

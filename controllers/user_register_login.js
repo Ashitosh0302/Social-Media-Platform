@@ -12,11 +12,11 @@ async function registerUser(req, res)
 {
     try
     {
-        const
-        {
+        const {
             username,
             email,
             password,
+            full_name,
             phone_number,
             date_of_birth,
             gender,
@@ -25,38 +25,54 @@ async function registerUser(req, res)
 
         const password_hash = await bcrypt.hash(password, 10);
 
-        const sql = `
+        const userSql = `
             INSERT INTO users
             (username, email, password_hash, phone_number, date_of_birth, gender, account_type)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
         db.query(
-            sql,
+            userSql,
             [
                 username,
                 email,
                 password_hash,
-                phone_number,
-                date_of_birth,
-                gender,
+                phone_number || null,
+                date_of_birth || null,
+                gender || null,
                 account_type
             ],
-            (err, result) =>
+            (err, userResult) =>
             {
-                if(err)
+                if (err)
                 {
-                    console.log(err);
-                    return res.send("Registration Failed");
+                    console.error(err);
+                    return res.send("User registration failed");
                 }
 
-                res.send("User Registered Successfully");
+                const user_id = userResult.insertId;
+
+                const profileSql = `
+                    INSERT INTO profiles (user_id, full_name)
+                    VALUES (?, ?)
+                `;
+
+                db.query(profileSql, [user_id, full_name], (err2) =>
+                {
+                    if (err2)
+                    {
+                        console.error(err2);
+                        return res.send("Profile creation failed");
+                    }
+
+                    res.redirect("/");
+                });
             }
         );
     }
-    catch(error)
+    catch (error)
     {
-        console.log(error);
+        console.error(error);
         res.send("Something went wrong");
     }
 }

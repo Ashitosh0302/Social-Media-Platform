@@ -1,28 +1,5 @@
 const db = require("../config/db");
 
-// Helper to get user counts (posts, followers, following)
-function getCounts(userId, cb) {
-    const postsCountSql = "SELECT COUNT(*) AS posts_count FROM posts WHERE user_id = ?";
-    const followersCountSql = "SELECT COUNT(*) AS followers_count FROM followers WHERE following_id = ?";
-    const followingCountSql = "SELECT COUNT(*) AS following_count FROM followers WHERE follower_id = ?";
-
-    db.query(postsCountSql, [userId], (err1, r1) => {
-        if (err1) return cb(err1);
-        const posts_count = r1 && r1[0] ? r1[0].posts_count : 0;
-
-        db.query(followersCountSql, [userId], (err2, r2) => {
-            if (err2) return cb(err2);
-            const followers_count = r2 && r2[0] ? r2[0].followers_count : 0;
-
-            db.query(followingCountSql, [userId], (err3, r3) => {
-                if (err3) return cb(err3);
-                const following_count = r3 && r3[0] ? r3[0].following_count : 0;
-                cb(null, { posts_count, followers_count, following_count });
-            });
-        });
-    });
-}
-
 async function dashboard(req, res)
 {
     const user_id = req.user.id;
@@ -43,23 +20,18 @@ async function dashboard(req, res)
 
         const rawProfile = profileResult.length > 0 ? profileResult[0] : null;
         const profile = {
-            profile_image: (rawProfile && rawProfile.profile_image) ? rawProfile.profile_image : "default.png"
+            profile_image: (rawProfile && rawProfile.profile_image) ? rawProfile.profile_image : "default.png",
+            full_name: (rawProfile && rawProfile.full_name) ? rawProfile.full_name : ""
         };
 
-        getCounts(user_id, (countErr, counts) => {
-            if (countErr) {
-                console.log("Dashboard counts error:", countErr);
-                return res.send("Failed to load dashboard");
-            }
+        const user = {
+            ...req.user,
+            posts_count: (rawProfile && rawProfile.posts_count != null) ? rawProfile.posts_count : 0,
+            followers_count: (rawProfile && rawProfile.followers_count != null) ? rawProfile.followers_count : 0,
+            following_count: (rawProfile && rawProfile.following_count != null) ? rawProfile.following_count : 0
+        };
 
-            const user = {
-                ...req.user,
-                posts_count: counts.posts_count,
-                followers_count: counts.followers_count,
-                following_count: counts.following_count
-            };
-
-            // load posts from current user + people they follow
+        // load posts from current user + people they follow
             const postsSql = `
                 SELECT
                     p.post_id,

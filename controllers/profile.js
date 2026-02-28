@@ -1,28 +1,5 @@
 const db = require("../config/db");
 
-function getCounts(userId, cb) {
-    const postsCountSql = "SELECT COUNT(*) AS posts_count FROM posts WHERE user_id = ?";
-    const followersCountSql = "SELECT COUNT(*) AS followers_count FROM followers WHERE following_id = ?";
-    const followingCountSql = "SELECT COUNT(*) AS following_count FROM followers WHERE follower_id = ?";
-
-    db.query(postsCountSql, [userId], (err1, r1) => {
-        if (err1) return cb(err1);
-        const posts_count = r1 && r1[0] ? r1[0].posts_count : 0;
-
-        db.query(followersCountSql, [userId], (err2, r2) => {
-            if (err2) return cb(err2);
-            const followers_count = r2 && r2[0] ? r2[0].followers_count : 0;
-
-            db.query(followingCountSql, [userId], (err3, r3) => {
-                if (err3) return cb(err3);
-                const following_count = r3 && r3[0] ? r3[0].following_count : 0;
-
-                cb(null, { posts_count, followers_count, following_count });
-            });
-        });
-    });
-}
-
 // load all posts for a given user with like and comment counts
 function getUserPosts(userId, cb) {
     const sql = `
@@ -73,48 +50,40 @@ async function profilePage(req, res) {
 
         const row = result.length > 0 ? result[0] : null;
 
-        getCounts(user_id, (countErr, counts) => {
-            if (countErr) {
-                console.log("Profile counts error:", countErr);
+        getUserPosts(user_id, (postsErr, userPosts) => {
+            if (postsErr) {
+                console.log("Profile posts load error:", postsErr);
                 return res.send("Failed to load profile");
             }
 
-            getUserPosts(user_id, (postsErr, userPosts) => {
-                if (postsErr) {
-                    console.log("Profile posts load error:", postsErr);
-                    return res.send("Failed to load profile");
+            const profile = row
+                ? {
+                    profile_image: row.profile_image || "default.png",
+                    full_name: row.full_name || "",
+                    posts_count: (row.posts_count != null) ? row.posts_count : 0,
+                    followers_count: (row.followers_count != null) ? row.followers_count : 0,
+                    following_count: (row.following_count != null) ? row.following_count : 0
                 }
-
-                const profile = row
-                    ? {
-                        profile_image: row.profile_image || "default.png",
-                        full_name: row.full_name || "",
-                        posts_count: counts.posts_count,
-                        followers_count: counts.followers_count,
-                        following_count: counts.following_count
-                    }
-                    : {
-                        profile_image: "default.png",
-                        full_name: "",
-                        posts_count: counts.posts_count,
-                        followers_count: counts.followers_count,
-                        following_count: counts.following_count
-                    };
-
-                // profileUser represents the profile being viewed (here: the logged-in user)
-                const profileUser = {
-                    id: req.user.id,
-                    username: row && row.username ? row.username : req.user.username
+                : {
+                    profile_image: "default.png",
+                    full_name: "",
+                    posts_count: 0,
+                    followers_count: 0,
+                    following_count: 0
                 };
 
-                res.render("profile", {
-                    user: req.user,      // logged-in user (viewer)
-                    profile,
-                    profileUser,
-                    isOwner: true,
-                    isFollowing: false,
-                    userPosts
-                });
+            const profileUser = {
+                id: req.user.id,
+                username: row && row.username ? row.username : req.user.username
+            };
+
+            res.render("profile", {
+                user: req.user,
+                profile,
+                profileUser,
+                isOwner: true,
+                isFollowing: false,
+                userPosts
             });
         });
     });
@@ -160,34 +129,27 @@ async function viewUserProfile(req, res) {
 
             const isFollowing = (fRes || []).length > 0;
 
-            getCounts(row.id, (countErr, counts) => {
-                if (countErr) {
-                    console.log("Profile counts error:", countErr);
+            getUserPosts(row.id, (postsErr, userPosts) => {
+                if (postsErr) {
+                    console.log("Profile posts load error:", postsErr);
                     return res.send("Failed to load user profile");
                 }
 
-                getUserPosts(row.id, (postsErr, userPosts) => {
-                    if (postsErr) {
-                        console.log("Profile posts load error:", postsErr);
-                        return res.send("Failed to load user profile");
-                    }
+                const profile = {
+                    profile_image: row.profile_image || "default.png",
+                    full_name: row.full_name || "",
+                    posts_count: (row.posts_count != null) ? row.posts_count : 0,
+                    followers_count: (row.followers_count != null) ? row.followers_count : 0,
+                    following_count: (row.following_count != null) ? row.following_count : 0
+                };
 
-                    const profile = {
-                        profile_image: row.profile_image || "default.png",
-                        full_name: row.full_name || "",
-                        posts_count: counts.posts_count,
-                        followers_count: counts.followers_count,
-                        following_count: counts.following_count
-                    };
-
-                    res.render("profile", {
-                        user: req.user, // logged-in viewer
-                        profile,
-                        profileUser,
-                        isOwner,
-                        isFollowing,
-                        userPosts
-                    });
+                res.render("profile", {
+                    user: req.user,
+                    profile,
+                    profileUser,
+                    isOwner,
+                    isFollowing,
+                    userPosts
                 });
             });
         });

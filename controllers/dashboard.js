@@ -119,7 +119,110 @@ async function dashboard(req, res)
     });
 }
 
+// view all public posts (from all users) in 3-column grid
+async function publicPosts(req, res) {
+    const user_id = req.user.id;
+
+    const profileSql = `
+        SELECT *
+        FROM profiles
+        WHERE user_id = ?
+    `;
+
+    db.query(profileSql, [user_id], (err, profileResult) => {
+        if (err) {
+            console.log("Public posts profile error:", err);
+            return res.send("Failed to load");
+        }
+
+        const profile = profileResult.length > 0
+            ? profileResult[0]
+            : { profile_image: "default.png" };
+
+        const postsSql = `
+            SELECT
+                p.post_id,
+                p.user_id,
+                u.username,
+                p.content,
+                p.image,
+                p.created_at,
+                COUNT(DISTINCT l.id) AS likes_count,
+                MAX(CASE WHEN l.user_id = ? THEN 1 ELSE 0 END) AS liked_by_me
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            LEFT JOIN likes l ON l.post_id = p.post_id
+            WHERE u.account_type = 'public'
+            GROUP BY
+                p.post_id,
+                p.user_id,
+                u.username,
+                p.content,
+                p.image,
+                p.created_at
+            ORDER BY p.created_at DESC
+        `;
+
+        db.query(postsSql, [user_id], (err2, postsResult) => {
+            if (err2) {
+                console.log("Public posts load error:", err2);
+                return res.send("Failed to load posts");
+            }
+
+            const posts = postsResult || [];
+
+            if (posts.length === 0) {
+                return res.render("public-posts", {
+                    user: req.user,
+                    profile,
+                    posts: [],
+                    commentsByPost: {}
+                });
+            }
+
+            const postIds = posts.map(p => p.post_id);
+            const placeholders = postIds.map(() => "?").join(",");
+
+            const commentsSql = `
+                SELECT
+                    c.id,
+                    c.post_id,
+                    c.comment_text,
+                    c.created_at,
+                    u.username
+                FROM comments c
+                JOIN users u ON c.user_id = u.id
+                WHERE c.post_id IN (${placeholders})
+                ORDER BY c.created_at ASC
+            `;
+
+            db.query(commentsSql, postIds, (err3, commentsResult) => {
+                if (err3) {
+                    console.log("Public posts comments error:", err3);
+                    return res.send("Failed to load comments");
+                }
+
+                const commentsByPost = {};
+                (commentsResult || []).forEach(row => {
+                    if (!commentsByPost[row.post_id]) {
+                        commentsByPost[row.post_id] = [];
+                    }
+                    commentsByPost[row.post_id].push(row);
+                });
+
+                res.render("public-posts", {
+                    user: req.user,
+                    profile,
+                    posts,
+                    commentsByPost
+                });
+            });
+        });
+    });
+}
+
 module.exports =
 {
-    dashboard
+    dashboard,
+    publicPosts
 };

@@ -52,6 +52,15 @@
             font-weight: bold;
         }
 
+        .stats a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .stats a:hover {
+            color: #0095f6;
+        }
+
         .edit-section {
             margin-top: 30px;
             padding-top: 20px;
@@ -137,6 +146,71 @@
             color: #0095f6;
             text-decoration: none;
         }
+
+        .posts-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .posts-section h3 {
+            margin: 0 0 15px;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .post-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .post-thumb {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .post-summary-meta {
+            font-size: 12px;
+            color: #777;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .no-user-posts {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #777;
+        }
     </style>
 </head>
 
@@ -158,8 +232,8 @@
 
             <div class="stats">
                 <div><%= profile.posts_count %> Posts</div>
-                <div><%= profile.followers_count %> Followers</div>
-                <div><%= profile.following_count %> Following</div>
+                <div><a href="/profile/<%= profileUser.id %>/followers"><%= profile.followers_count %> Followers</a></div>
+                <div><a href="/profile/<%= profileUser.id %>/following"><%= profile.following_count %> Following</a></div>
             </div>
 
             <% if (typeof isOwner !== 'undefined' && !isOwner) { %>
@@ -199,6 +273,54 @@
         </form>
     </div>
     <% } %>
+
+    <!-- USER POSTS GRID -->
+    <div class="posts-section">
+        <h3>
+            <% if (typeof isOwner === 'undefined' || isOwner) { %>
+                Your Posts
+            <% } else { %>
+                <%= profileUser && profileUser.username ? profileUser.username : 'User' %>'s Posts
+            <% } %>
+        </h3>
+
+        <% if (userPosts && userPosts.length > 0) { %>
+            <div class="posts-grid">
+                <% userPosts.forEach(function(post) { %>
+                    <div class="post-card">
+                        <div class="post-thumb">
+                            <% if (post.image) { %>
+                                <img src="/uploads/<%= post.image %>" alt="Post image" />
+                            <% } else { %>
+                                <span>No image</span>
+                            <% } %>
+                        </div>
+                        <div class="post-title">
+                            <% 
+                                var heading = (post.content || "").trim();
+                                if (!heading && post.image) {
+                                    heading = "Photo post";
+                                }
+                                if (heading.length > 80) {
+                                    heading = heading.substring(0, 80) + "...";
+                                }
+                            %>
+                            <%= heading || "Untitled post" %>
+                        </div>
+                        <div class="post-summary-meta">
+                            <span><%= post.likes_count || 0 %> Likes</span>
+                            <span>•</span>
+                            <span><%= post.comments_count || 0 %> Comments</span>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="no-user-posts">
+                No posts yet.
+            </div>
+        <% } %>
+    </div>
 
     <a class="back-link" href="/dashboard">← Back to Dashboard</a>
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= profileUser.username %> - <%= listType === 'followers' ? 'Followers' : 'Following' %></title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        h2 {
+            margin: 0 0 20px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #0095f6;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .people-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .person-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .person-item:last-child {
+            border-bottom: none;
+        }
+        .person-item a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: #333;
+        }
+        .person-item a:hover {
+            color: #0095f6;
+        }
+        .person-item img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .person-item .username {
+            font-weight: 500;
+        }
+        .empty-text {
+            color: #777;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a class="back-link" href="/profile/<%= profileUser.id %>">← Back to Profile</a>
+
+    <% if (listType === 'followers') { %>
+        <h2>Followers of <%= profileUser.username %></h2>
+    <% } else { %>
+        <h2><%= profileUser.username %> is Following</h2>
+    <% } %>
+
+    <% if (people && people.length > 0) { %>
+        <ul class="people-list">
+            <% people.forEach(function(p) { %>
+                <li class="person-item">
+                    <a href="/profile/<%= p.id %>">
+                        <img src="/uploads/<%= p.profile_image %>" alt="">
+                        <span class="username"><%= p.username %></span>
+                    </a>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <div class="empty-text">
+            <% if (listType === 'followers') { %>
+                No followers yet.
+            <% } else { %>
+                Not following anyone yet.
+            <% } %>
+        </div>
+    <% } %>
+</div>
+
+</body>
+</html>
+

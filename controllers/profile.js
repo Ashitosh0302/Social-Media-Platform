@@ -23,6 +23,37 @@ function getCounts(userId, cb) {
     });
 }
 
+// load all posts for a given user with like and comment counts
+function getUserPosts(userId, cb) {
+    const sql = `
+        SELECT
+            p.post_id,
+            p.content,
+            p.image,
+            p.created_at,
+            COALESCE(l.likes_count, 0) AS likes_count,
+            COALESCE(c.comments_count, 0) AS comments_count
+        FROM posts p
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS likes_count
+            FROM likes
+            GROUP BY post_id
+        ) l ON l.post_id = p.post_id
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS comments_count
+            FROM comments
+            GROUP BY post_id
+        ) c ON c.post_id = p.post_id
+        WHERE p.user_id = ?
+        ORDER BY p.created_at DESC
+    `;
+
+    db.query(sql, [userId], (err, results) => {
+        if (err) return cb(err);
+        cb(null, results || []);
+    });
+}
+
 // render own profile page
 async function profilePage(req, res) {
     const user_id = req.user.id;
@@ -48,34 +79,42 @@ async function profilePage(req, res) {
                 return res.send("Failed to load profile");
             }
 
-            const profile = row
-                ? {
-                    profile_image: row.profile_image || "default.png",
-                    full_name: row.full_name || "",
-                    posts_count: counts.posts_count,
-                    followers_count: counts.followers_count,
-                    following_count: counts.following_count
+            getUserPosts(user_id, (postsErr, userPosts) => {
+                if (postsErr) {
+                    console.log("Profile posts load error:", postsErr);
+                    return res.send("Failed to load profile");
                 }
-                : {
-                    profile_image: "default.png",
-                    full_name: "",
-                    posts_count: counts.posts_count,
-                    followers_count: counts.followers_count,
-                    following_count: counts.following_count
+
+                const profile = row
+                    ? {
+                        profile_image: row.profile_image || "default.png",
+                        full_name: row.full_name || "",
+                        posts_count: counts.posts_count,
+                        followers_count: counts.followers_count,
+                        following_count: counts.following_count
+                    }
+                    : {
+                        profile_image: "default.png",
+                        full_name: "",
+                        posts_count: counts.posts_count,
+                        followers_count: counts.followers_count,
+                        following_count: counts.following_count
+                    };
+
+                // profileUser represents the profile being viewed (here: the logged-in user)
+                const profileUser = {
+                    id: req.user.id,
+                    username: row && row.username ? row.username : req.user.username
                 };
 
-            // profileUser represents the profile being viewed (here: the logged-in user)
-            const profileUser = {
-                id: req.user.id,
-                username: row && row.username ? row.username : req.user.username
-            };
-
-            res.render("profile", {
-                user: req.user,      // logged-in user (viewer)
-                profile,
-                profileUser,
-                isOwner: true,
-                isFollowing: false
+                res.render("profile", {
+                    user: req.user,      // logged-in user (viewer)
+                    profile,
+                    profileUser,
+                    isOwner: true,
+                    isFollowing: false,
+                    userPosts
+                });
             });
         });
     });
@@ -127,20 +166,28 @@ async function viewUserProfile(req, res) {
                     return res.send("Failed to load user profile");
                 }
 
-                const profile = {
-                    profile_image: row.profile_image || "default.png",
-                    full_name: row.full_name || "",
-                    posts_count: counts.posts_count,
-                    followers_count: counts.followers_count,
-                    following_count: counts.following_count
-                };
+                getUserPosts(row.id, (postsErr, userPosts) => {
+                    if (postsErr) {
+                        console.log("Profile posts load error:", postsErr);
+                        return res.send("Failed to load user profile");
+                    }
 
-                res.render("profile", {
-                    user: req.user, // logged-in viewer
-                    profile,
-                    profileUser,
-                    isOwner,
-                    isFollowing
+                    const profile = {
+                        profile_image: row.profile_image || "default.png",
+                        full_name: row.full_name || "",
+                        posts_count: counts.posts_count,
+                        followers_count: counts.followers_count,
+                        following_count: counts.following_count
+                    };
+
+                    res.render("profile", {
+                        user: req.user, // logged-in viewer
+                        profile,
+                        profileUser,
+                        isOwner,
+                        isFollowing,
+                        userPosts
+                    });
                 });
             });
         });
@@ -173,6 +220,11 @@ async function toggleFollow(req, res) {
             const insSql = "INSERT INTO followers (follower_id, following_id) VALUES (?, ?)";
             db.query(insSql, [follower_id, following_id], (err2) => {
                 if (err2) console.log("Follow insert error:", err2);
+                else {
+                    // notify the followed user that someone followed them
+                    const notifSql = "INSERT INTO notifications (user_id, actor_id, type) VALUES (?, ?, 'new_follower')";
+                    db.query(notifSql, [following_id, follower_id]);
+                }
                 res.redirect("/profile/" + following_id);
             });
         }
@@ -215,6 +267,124 @@ async function searchUsers(req, res) {
         }));
 
         res.json(formatted);
+    });
+}
+
+// view list of followers for a user
+async function viewFollowers(req, res) {
+    const targetUserId = req.params.id;
+
+    const userSql = `
+        SELECT users.id, users.username
+        FROM users
+        WHERE users.id = ?
+    `;
+
+    db.query(userSql, [targetUserId], (err, userResult) => {
+        if (err) {
+            console.log("View followers user query error:", err);
+            return res.send("Failed to load");
+        }
+
+        if (!userResult || userResult.length === 0) {
+            return res.status(404).send("User not found");
+        }
+
+        const profileUser = {
+            id: userResult[0].id,
+            username: userResult[0].username
+        };
+
+        const followersSql = `
+            SELECT
+                u.id,
+                u.username,
+                COALESCE(p.profile_image, 'default.png') AS profile_image
+            FROM followers f
+            JOIN users u ON f.follower_id = u.id
+            LEFT JOIN profiles p ON p.user_id = u.id
+            WHERE f.following_id = ?
+            ORDER BY u.username
+        `;
+
+        db.query(followersSql, [targetUserId], (fErr, followersResult) => {
+            if (fErr) {
+                console.log("View followers query error:", fErr);
+                return res.send("Failed to load followers");
+            }
+
+            const people = (followersResult || []).map((row) => ({
+                id: row.id,
+                username: row.username,
+                profile_image: row.profile_image || "default.png"
+            }));
+
+            res.render("followers", {
+                user: req.user,
+                profileUser,
+                listType: "followers",
+                people
+            });
+        });
+    });
+}
+
+// view list of users that this user is following
+async function viewFollowing(req, res) {
+    const targetUserId = req.params.id;
+
+    const userSql = `
+        SELECT users.id, users.username
+        FROM users
+        WHERE users.id = ?
+    `;
+
+    db.query(userSql, [targetUserId], (err, userResult) => {
+        if (err) {
+            console.log("View following user query error:", err);
+            return res.send("Failed to load");
+        }
+
+        if (!userResult || userResult.length === 0) {
+            return res.status(404).send("User not found");
+        }
+
+        const profileUser = {
+            id: userResult[0].id,
+            username: userResult[0].username
+        };
+
+        const followingSql = `
+            SELECT
+                u.id,
+                u.username,
+                COALESCE(p.profile_image, 'default.png') AS profile_image
+            FROM followers f
+            JOIN users u ON f.following_id = u.id
+            LEFT JOIN profiles p ON p.user_id = u.id
+            WHERE f.follower_id = ?
+            ORDER BY u.username
+        `;
+
+        db.query(followingSql, [targetUserId], (fErr, followingResult) => {
+            if (fErr) {
+                console.log("View following query error:", fErr);
+                return res.send("Failed to load following");
+            }
+
+            const people = (followingResult || []).map((row) => ({
+                id: row.id,
+                username: row.username,
+                profile_image: row.profile_image || "default.png"
+            }));
+
+            res.render("followers", {
+                user: req.user,
+                profileUser,
+                listType: "following",
+                people
+            });
+        });
     });
 }
 
@@ -266,5 +436,7 @@ module.exports =
     viewUserProfile,
     toggleFollow,
     searchUsers,
-    updateProfileImage
+    updateProfileImage,
+    viewFollowers,
+    viewFollowing
 };

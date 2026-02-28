@@ -22,13 +22,29 @@ async function createPost(req, res) {
         VALUES (?, ?, ?)
     `;
 
-    db.query(sql, [user_id, content, image], (err) => {
+    db.query(sql, [user_id, content, image], (err, result) => {
         if (err) {
             console.log("Create post error:", err);
             return res.send("Failed to create post");
         }
 
-        res.redirect("/dashboard");
+        const post_id = result && result.insertId;
+
+        // notify all followers that this user posted
+        if (post_id) {
+            const followersSql = "SELECT follower_id FROM followers WHERE following_id = ?";
+            db.query(followersSql, [user_id], (fErr, followers) => {
+                if (!fErr && followers && followers.length > 0) {
+                    const notifSql = "INSERT INTO notifications (user_id, actor_id, type, ref_id) VALUES (?, ?, 'new_post', ?)";
+                    followers.forEach((row) => {
+                        db.query(notifSql, [row.follower_id, user_id, post_id]);
+                    });
+                }
+                res.redirect("/dashboard");
+            });
+        } else {
+            res.redirect("/dashboard");
+        }
     });
 }
 

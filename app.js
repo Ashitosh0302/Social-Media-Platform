@@ -22,6 +22,7 @@ const login_route=require("./routes/user_login")
 const dashboard_route=require("./routes/dashboard")
 const profile_route=require("./routes/profile")
 const posts_route=require("./routes/posts")
+const notifications_route=require("./routes/notifications")
 
 //app routes
 app.use("/",home_route)
@@ -30,6 +31,7 @@ app.use("/login",login_route)
 app.use("/dashboard",dashboard_route)
 app.use("/profile",profile_route)
 app.use("/posts",posts_route)
+app.use("/notifications",notifications_route)
 
 // global error handler (including multer upload errors)
 app.use((err, req, res, next) =>

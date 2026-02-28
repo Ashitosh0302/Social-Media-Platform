@@ -31,8 +31,11 @@ async function dashboard(req, res)
             following_count: (rawProfile && rawProfile.following_count != null) ? rawProfile.following_count : 0
         };
 
-        // load posts from current user + people they follow
-            const postsSql = `
+        // load posts for dashboard feed:
+        // - posts from current user
+        // - posts from people they follow
+        // - posts from all public accounts (instagram-like mixed feed)
+        const postsSql = `
                 SELECT
                     p.post_id,
                     p.user_id,
@@ -53,6 +56,7 @@ async function dashboard(req, res)
                     ON l.post_id = p.post_id
                 WHERE p.user_id = ?
                    OR f.id IS NOT NULL
+                   OR u.account_type = 'public'
                 GROUP BY
                     p.post_id,
                     p.user_id,
@@ -73,14 +77,42 @@ async function dashboard(req, res)
 
             const posts = postsResult || [];
 
+            // helper to also attach unread notification count for badge
+            const renderWithNotifications = (finalPosts, commentsByPost) =>
+            {
+                const notifSql = `
+                    SELECT COUNT(*) AS cnt
+                    FROM notifications
+                    WHERE user_id = ?
+                      AND is_read = 0
+                `;
+
+                db.query(notifSql, [user_id], (notifErr, notifResult) =>
+                {
+                    if (notifErr)
+                    {
+                        console.log("Load unread notifications error:", notifErr);
+                    }
+
+                    const unreadNotifications =
+                        notifResult && notifResult[0] && notifResult[0].cnt
+                            ? notifResult[0].cnt
+                            : 0;
+
+                    res.render("dashboard", {
+                        user,
+                        profile,
+                        posts: finalPosts,
+                        commentsByPost,
+                        unreadNotifications
+                    });
+                });
+            };
+
+            // no posts at all – still render badge + empty feed
             if (posts.length === 0)
             {
-                return res.render("dashboard", {
-                    user,
-                    profile,
-                    posts: [],
-                    commentsByPost: {}
-                });
+                return renderWithNotifications([], {});
             }
 
             const postIds = posts.map(p => p.post_id);
@@ -119,12 +151,7 @@ async function dashboard(req, res)
                     commentsByPost[row.post_id].push(row);
                 });
 
-                res.render("dashboard", {
-                    user,
-                    profile,
-                    posts,
-                    commentsByPost
-                });
+                renderWithNotifications(posts, commentsByPost);
             });
         });
     });

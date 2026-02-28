@@ -1,219 +1,926 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Public Posts</title>
+    <title>BirdSky · Public Posts</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #b7dff7 0%, #c6e9ff 40%, #d4f0ff 70%, #b3d5e7 100%);
+            min-height: 100vh;
+            position: relative;
         }
+
+        .bird {
+            position: fixed;
+            color: #2f5570;
+            font-size: 1.8rem;
+            opacity: 0.2;
+            z-index: 0;
+            pointer-events: none;
+            animation: fly 20s infinite linear;
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(40px, -10px) rotate(2deg); }
+            50% { transform: translate(80px, 0) rotate(-1deg); }
+            75% { transform: translate(40px, 8px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes flyReverse {
+            0% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
+            25% { transform: translate(-40px, -8px) scaleX(-1) rotate(-2deg); }
+            50% { transform: translate(-80px, 4px) scaleX(-1) rotate(1deg); }
+            75% { transform: translate(-40px, 6px) scaleX(-1) rotate(-1deg); }
+            100% { transform: translate(0, 0) scaleX(-1) rotate(0deg); }
+        }
+
+        .bird1 { top: 10%; left: -5%; animation-duration: 25s; }
+        .bird2 { top: 25%; right: -5%; animation: flyReverse 28s infinite; }
+        .bird3 { bottom: 15%; left: -8%; animation-duration: 32s; }
+        .bird4 { bottom: 30%; right: -6%; animation: flyReverse 26s infinite; }
+
+        .cloud {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 100px;
+            filter: blur(40px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .cloud1 {
+            width: 400px;
+            height: 100px;
+            top: 15%;
+            right: -50px;
+        }
+
+        .cloud2 {
+            width: 500px;
+            height: 120px;
+            bottom: 20%;
+            left: -80px;
+        }
+
         .container {
             display: flex;
             min-height: 100vh;
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
         }
+
         .sidebar {
-            width: 250px;
-            background: #ffffff;
-            padding: 20px;
-            border-right: 1px solid #ddd;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            padding: 25px 20px;
+            border-right: 1px solid rgba(100, 180, 230, 0.3);
         }
+
         .profile-box {
             text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 30px;
+            padding: 25px 20px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 20px -8px rgba(0, 70, 100, 0.15);
+            position: relative;
         }
+
+        .profile-box::before {
+            content: "🕊️";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.4rem;
+            background: white;
+            padding: 4px 16px;
+            border-radius: 40px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border: 1px solid #b0d4f0;
+            color: #2c7da0;
+        }
+
         .profile-box img {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0, 60, 90, 0.15);
+            margin-bottom: 12px;
         }
-        .profile-box h3 { margin: 10px 0 5px; }
+
+        .profile-box h3 {
+            margin: 8px 0 15px;
+            font-size: 1.4rem;
+            color: #135e8a;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 15px 0;
+            padding: 12px 0;
+            border-top: 1px solid rgba(100, 180, 230, 0.3);
+            border-bottom: 1px solid rgba(100, 180, 230, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #135e8a;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #2d6a8f;
+        }
+
         .profile-box a {
             display: inline-block;
-            margin-top: 10px;
-            padding: 8px 15px;
-            background: #0095f6;
-            color: #fff;
+            padding: 10px 28px;
+            background: linear-gradient(145deg, #2c7da0, #1e5f8a);
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 10px rgba(0, 70, 120, 0.2);
+            transition: all 0.2s;
         }
+
+        .profile-box a:hover {
+            background: linear-gradient(145deg, #3597c0, #2473a0);
+            transform: translateY(-2px);
+        }
+
         .feed {
             flex: 1;
-            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
         }
-        .feed-header {
+
+        .dashboard-header {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+            padding: 12px 25px;
+            margin: 12px 25px 0;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 15px rgba(0, 70, 100, 0.1);
+            position: relative;
+            z-index: 100;
         }
-        .feed-header h2 { margin: 0; }
-        .back-link {
-            color: #0095f6;
+
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-container {
+            max-width: 320px;
+            min-width: 180px;
+            position: relative;
+            flex: 1;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 18px;
+            border: 2px solid rgba(100, 180, 230, 0.5);
+            border-radius: 40px;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-container input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            background: white;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 48px;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #b0d4f0;
+            border-radius: 16px;
+            max-height: 280px;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 70, 110, 0.15);
+            display: none;
+            z-index: 1000;
+        }
+
+        .view-public-link {
+            padding: 10px 25px;
+            background: linear-gradient(145deg, #4a9fc1, #2c7da0);
+            color: white;
             text-decoration: none;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        .back-link:hover { text-decoration: underline; }
+
+        .view-public-link:hover {
+            background: linear-gradient(145deg, #5bb5da, #3597c0);
+            transform: translateY(-2px);
+        }
+
+        .top-right-actions {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .notif-trigger {
+            position: relative;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(100, 180, 230, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .notif-trigger:hover {
+            border-color: #2c7da0;
+            transform: scale(1.05);
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 5px;
+            background: #ed6a5e;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .feed-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 25px 25px;
+            min-height: 0;
+            position: relative;
+            z-index: 1;
+        }
+
         .posts-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 600px;
+            gap: 20px;
         }
-        .post-card {
-            background: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            overflow: hidden;
+
+        .post {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 16px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 16px -8px rgba(0, 70, 100, 0.1);
+            transition: all 0.2s;
             display: flex;
             flex-direction: column;
         }
-        .post-thumb {
+
+        .post:hover {
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 12px 24px -8px rgba(0, 80, 120, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .post-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 60, 90, 0.15);
+            background: #b0d4f0;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-username {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #135e8a;
+            margin-bottom: 4px;
+        }
+
+        .post-time {
+            font-size: 0.7rem;
+            color: #2d6a8f;
+        }
+
+        .post-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #13506b;
+            margin-bottom: 12px;
+            word-wrap: break-word;
+        }
+
+        .post-image-container {
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #e9ecef;
+            border-radius: 16px;
             overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 4px 12px rgba(0, 60, 90, 0.15);
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.2);
         }
-        .post-thumb img {
+
+        .post-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
-        .post-body {
-            padding: 8px;
-        }
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-        .post-header h4 { margin: 0; font-size: 12px; }
-        .post-meta { font-size: 10px; color: #777; }
-        .post-content {
-            font-size: 11px;
-            color: #333;
-            margin-bottom: 6px;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+
         .post-actions {
-            margin-top: 4px;
+            display: flex;
+            gap: 12px;
+            margin: 8px 0 12px;
         }
-        .post-actions form { display: inline; }
+
         .post-actions button {
-            background: none;
-            border: none;
-            color: #0095f6;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(100, 180, 230, 0.5);
+            color: #135e8a;
             cursor: pointer;
-            padding: 0;
-            font-size: 11px;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
         }
-        .post-stats {
-            font-size: 10px;
-            color: #777;
-            margin-top: 2px;
+
+        .post-actions button:hover {
+            background: #2c7da0;
+            color: white;
+            border-color: #2c7da0;
         }
-        .comments-preview {
-            margin-top: 4px;
-            font-size: 10px;
-            color: #555;
-            max-height: 36px;
-            overflow-y: auto;
+
+        .comments-section {
+            margin-top: 8px;
+            border-top: 1px solid rgba(100, 180, 230, 0.3);
+            padding-top: 12px;
         }
-        .comment-item {
-            margin-bottom: 2px;
+
+        .comment {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            font-size: 0.85rem;
         }
+
+        .comment-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            flex-shrink: 0;
+            background: #b0d4f0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-username {
+            font-weight: 600;
+            color: #135e8a;
+            margin-right: 4px;
+        }
+
         .add-comment {
-            margin-top: 6px;
+            margin-top: 10px;
         }
+
         .add-comment input {
             width: 100%;
-            padding: 4px 6px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            font-size: 11px;
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 2px solid rgba(100, 180, 230, 0.5);
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
         }
+
+        .add-comment input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            background: white;
+        }
+
         .no-posts {
             text-align: center;
-            color: #777;
-            padding: 40px 20px;
+            padding: 60px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 40px;
+            color: #135e8a;
+        }
+
+        .bird-decoration {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            font-size: 1.3rem;
+            opacity: 0.4;
+        }
+
+        .notif-wrapper {
+            position: relative;
+        }
+
+        .notif-dropdown {
+            position: fixed;
+            top: 15px;
+            right: 30px;
+            width: 340px;
+            max-height: 400px;
+            background: white;
+            border: 1px solid #b0d4f0;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 70, 110, 0.25);
+            overflow: hidden;
+            z-index: 9999;
+            display: none;
+        }
+
+        .notif-dropdown-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #d0e6f5;
+            font-weight: 600;
+            color: #135e8a;
+            background: #f0f8ff;
+        }
+
+        .notif-list {
+            max-height: 360px;
+            overflow-y: auto;
+        }
+
+        .notif-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5f0f7;
+            text-decoration: none;
+            color: #13506b;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .notif-item:hover {
+            background: #f0f8ff;
+        }
+
+        .notif-item.unread {
+            background: #e6f3ff;
+        }
+
+        .notif-item img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #b0d4f0;
+            flex-shrink: 0;
+            background: #b0d4f0;
+        }
+
+        .notif-time {
+            font-size: 0.7rem;
+            color: #2d6a8f;
+            margin-top: 4px;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            text-decoration: none;
+            color: #13506b;
+            border-bottom: 1px solid #e5f0f7;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #f0f8ff;
+        }
+
+        .search-result-item img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #b0d4f0;
+            background: #b0d4f0;
+        }
+
+        .search-empty {
+            padding: 15px;
+            text-align: center;
+            color: #2d6a8f;
+        }
+
+        @media (max-width: 900px) {
+            .posts-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(100, 180, 230, 0.3);
+            }
+            .dashboard-header {
+                margin: 15px 15px 0;
+                padding: 12px 15px;
+                flex-wrap: wrap;
+            }
+            .feed-content {
+                padding: 15px;
+            }
         }
     </style>
 </head>
+
 <body>
+    <div class="bird bird1">🕊️</div>
+    <div class="bird bird2">🕊️</div>
+    <div class="bird bird3">🕊️</div>
+    <div class="bird bird4">🕊️</div>
 
-<div class="container">
-    <div class="sidebar">
-        <div class="profile-box">
-            <img src="/uploads/<%= profile.profile_image ? profile.profile_image : 'default.png' %>" alt="Profile" />
-            <h3><%= user.username %></h3>
-            <a href="/profile">View Profile</a>
-        </div>
-    </div>
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
 
-    <div class="feed">
-        <div class="feed-header">
-            <h2>Public Posts</h2>
-            <a class="back-link" href="/dashboard">← Back to Dashboard</a>
-        </div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="profile-box">
+                <img src="<%= profile && profile.profile_image ? '/uploads/' + profile.profile_image : '/images/default-avatar.svg' %>"
+                    alt="Profile"
+                    onerror="this.src='/images/default-avatar.svg'" />
 
-        <% if (!posts || posts.length === 0) { %>
-            <div class="no-posts">
-                <h3>No public posts yet</h3>
+                <h3><%= user ? user.username : 'Username' %></h3>
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value"><%= user ? user.posts_count || 0 : 0 %></div>
+                        <div class="stat-label">Posts</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%= user ? user.followers_count || 0 : 0 %></div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value"><%= user ? user.following_count || 0 : 0 %></div>
+                        <div class="stat-label">Following</div>
+                    </div>
+                </div>
+
+                <a href="/profile">View Profile</a>
             </div>
-        <% } else { %>
-            <div class="posts-grid">
-                <% posts.forEach(function(post) { %>
-                    <div class="post-card">
-                        <div class="post-thumb">
-                            <% if (post.image) { %>
-                                <img src="/uploads/<%= post.image %>" alt="Post" />
-                            <% } else { %>
-                                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#999;">No image</div>
-                            <% } %>
-                        </div>
-                        <div class="post-body">
-                            <div class="post-header">
-                                <h4><%= post.username %></h4>
-                                <span class="post-meta"><%= new Date(post.created_at).toLocaleDateString() %></span>
-                            </div>
-                            <div class="post-content"><%= (post.content || '').trim() || '—' %></div>
-                            <div class="post-actions">
-                                <form action="/posts/<%= post.post_id %>/like" method="POST">
-                                    <button type="submit">
-                                        <% if (post.liked_by_me) { %>Unlike<% } else { %>Like<% } %>
-                                        (<%= post.likes_count || 0 %>)
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="post-stats"><%= (commentsByPost && commentsByPost[post.post_id] ? commentsByPost[post.post_id].length : 0) %> Comments</div>
-                            <% const comments = (commentsByPost && commentsByPost[post.post_id]) || []; %>
-                            <% if (comments.length > 0) { %>
-                                <div class="comments-preview">
-                                    <% comments.slice(0, 2).forEach(function(c) { %>
-                                        <div class="comment-item"><strong><%= c.username %></strong> <%= c.comment_text %></div>
-                                    <% }); %>
-                                    <% if (comments.length > 2) { %><div class="comment-item">...</div><% } %>
-                                </div>
-                            <% } %>
-                            <div class="add-comment">
-                                <form action="/posts/<%= post.post_id %>/comment" method="POST">
-                                    <input type="text" name="comment_text" placeholder="Add comment..." autocomplete="off" />
-                                </form>
+        </div>
+
+        <div class="feed">
+            <div class="dashboard-header">
+                <div class="search-row">
+                    <div class="search-container">
+                        <input type="text" id="user-search" placeholder="Search users..." autocomplete="off" />
+                        <div id="search-results" class="search-results"></div>
+                    </div>
+                    <a class="view-public-link" href="/dashboard">← Back to Dashboard</a>
+                </div>
+                <div class="top-right-actions">
+                    <div class="notif-wrapper">
+                        <button type="button" class="notif-trigger" id="notif-trigger">
+                            🔔
+                            <span id="notif-badge" class="notif-badge" style="display:none;">0</span>
+                        </button>
+                        <div class="notif-dropdown" id="notif-dropdown">
+                            <div class="notif-dropdown-header">Notifications</div>
+                            <div class="notif-list" id="notif-list">
+                                <div class="notif-empty">Loading...</div>
                             </div>
                         </div>
                     </div>
-                <% }); %>
+                </div>
             </div>
-        <% } %>
-    </div>
-</div>
 
+            <div class="feed-content">
+                <% if (!posts || posts.length === 0) { %>
+                    <div class="no-posts">
+                        <h3>No public posts yet</h3>
+                        <div class="bird-decoration">
+                            <span>🕊️</span> <span>🪹</span> <span>🕊️</span>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <div class="posts-grid">
+                        <% posts.forEach(function(post) { %>
+                            <div class="post">
+                                <div class="post-header">
+                                    <img src="<%= post.user_profile_image ? '/uploads/' + post.user_profile_image : '/images/default-avatar.svg' %>"
+                                         alt="<%= post.username %>"
+                                         class="post-avatar"
+                                         onerror="this.src='/images/default-avatar.svg'">
+                                    <div class="post-user-info">
+                                        <div class="post-username"><%= post.username || 'User' %></div>
+                                        <div class="post-time">
+                                            <%
+                                                const date = new Date(post.created_at);
+                                                const now = new Date();
+                                                const diff = now - date;
+                                                if (diff < 60000) { %>Just now<% }
+                                                else if (diff < 3600000) { %><%= Math.floor(diff/60000) %>m ago<% }
+                                                else if (diff < 86400000) { %><%= Math.floor(diff/3600000) %>h ago<% }
+                                                else { %><%= date.toLocaleDateString() %><% }
+                                            %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="post-content"><%= post.content || '' %></div>
+
+                                <% if (post.image) { %>
+                                    <div class="post-image-container">
+                                        <img src="/uploads/<%= post.image %>"
+                                             alt="Post image"
+                                             loading="lazy"
+                                             onerror="this.src='/images/default-post.png'">
+                                    </div>
+                                <% } %>
+
+                                <div class="post-actions">
+                                    <form action="/posts/<%= post.post_id %>/like" method="POST">
+                                        <button type="submit">
+                                            <% if (post.liked_by_me) { %>
+                                                ❤️ <span><%= post.likes_count || 0 %></span>
+                                            <% } else { %>
+                                                🤍 <span><%= post.likes_count || 0 %></span>
+                                            <% } %>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div class="comments-section">
+                                    <% const comments = (commentsByPost && commentsByPost[post.post_id]) || []; %>
+                                    <% if (comments.length > 0) { %>
+                                        <% comments.slice(0, 2).forEach(function(c) { %>
+                                            <div class="comment">
+                                                <img src="<%= c.user_profile_image ? '/uploads/' + c.user_profile_image : '/images/default-avatar.svg' %>"
+                                                     alt="<%= c.username %>"
+                                                     class="comment-avatar"
+                                                     onerror="this.src='/images/default-avatar.svg'">
+                                                <div class="comment-content">
+                                                    <span class="comment-username"><%= c.username || 'User' %></span>
+                                                    <span class="comment-text"><%= c.comment_text || '' %></span>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                        <% if (comments.length > 2) { %>
+                                            <div style="text-align: center; font-size: 0.8rem; color: #2d6a8f; margin: 5px 0;">
+                                                +<%= comments.length - 2 %> more comments
+                                            </div>
+                                        <% } %>
+                                    <% } %>
+
+                                    <div class="add-comment">
+                                        <form action="/posts/<%= post.post_id %>/comment" method="POST">
+                                            <input type="text" name="comment_text" placeholder="Add a comment..." autocomplete="off" />
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const searchInput = document.getElementById("user-search");
+            const resultsBox = document.getElementById("search-results");
+
+            if (!searchInput || !resultsBox) return;
+
+            let debounceTimeout = null;
+
+            function renderResults(users) {
+                if (!users || users.length === 0) {
+                    resultsBox.innerHTML = '<div class="search-empty">No users found</div>';
+                    resultsBox.style.display = "block";
+                    return;
+                }
+
+                const html = users.map(user => `
+                    <a class="search-result-item" href="/profile/${user.id}">
+                        <img src="${user.profile_image ? '/uploads/' + user.profile_image : '/images/default-avatar.svg'}"
+                             alt="${user.username}"
+                             onerror="this.src='/images/default-avatar.svg'">
+                        <span>${user.username}</span>
+                    </a>
+                `).join("");
+
+                resultsBox.innerHTML = html;
+                resultsBox.style.display = "block";
+            }
+
+            searchInput.addEventListener("input", function () {
+                const query = this.value.trim();
+
+                clearTimeout(debounceTimeout);
+
+                if (!query) {
+                    resultsBox.style.display = "none";
+                    return;
+                }
+
+                debounceTimeout = setTimeout(() => {
+                    fetch(`/profile/search?q=${encodeURIComponent(query)}`)
+                        .then(res => res.json())
+                        .then(data => renderResults(data))
+                        .catch(err => {
+                            console.error("Search error:", err);
+                            resultsBox.innerHTML = '<div class="search-empty">Error searching</div>';
+                            resultsBox.style.display = "block";
+                        });
+                }, 300);
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!resultsBox.contains(e.target) && e.target !== searchInput) {
+                    resultsBox.style.display = "none";
+                }
+            });
+        })();
+
+        (function() {
+            const trigger = document.getElementById("notif-trigger");
+            const dropdown = document.getElementById("notif-dropdown");
+            const list = document.getElementById("notif-list");
+            const badge = document.getElementById("notif-badge");
+
+            if (!trigger) return;
+
+            function fetchUnreadCount() {
+                fetch("/notifications/unread-count")
+                    .then(res => res.json())
+                    .then(data => {
+                        const n = data.count || 0;
+                        if (n > 0) {
+                            badge.textContent = n > 99 ? "99+" : n;
+                            badge.style.display = "flex";
+                        } else {
+                            badge.style.display = "none";
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            function formatTimeAgo(d) {
+                const seconds = Math.floor((Date.now() - d) / 1000);
+                if (seconds < 60) return "Just now";
+                if (seconds < 3600) return Math.floor(seconds / 60) + "m ago";
+                if (seconds < 86400) return Math.floor(seconds / 3600) + "h ago";
+                if (seconds < 604800) return Math.floor(seconds / 86400) + "d ago";
+                return d.toLocaleDateString();
+            }
+
+            function loadNotifications() {
+                list.innerHTML = '<div class="notif-empty">Loading...</div>';
+                fetch("/notifications")
+                    .then(res => res.json())
+                    .then(notifs => {
+                        if (!notifs || notifs.length === 0) {
+                            list.innerHTML = '<div class="notif-empty">No notifications</div>';
+                            return;
+                        }
+                        const unreadIds = [];
+                        const html = notifs.map(n => {
+                            if (!n.is_read) unreadIds.push(n.id);
+                            const text = n.type === "new_post"
+                                ? "<strong>" + (n.actor_username || "Someone") + "</strong> posted a new post."
+                                : "<strong>" + (n.actor_username || "Someone") + "</strong> started following you.";
+                            const itemClass = "notif-item" + (n.is_read ? "" : " unread");
+                            return `<a class="${itemClass}" href="${n.type === 'new_post' ? '/dashboard' : '/profile/' + n.actor_id}">
+                                <img src="${n.actor_profile_image ? '/uploads/' + n.actor_profile_image : '/images/default-avatar.svg'}"
+                                     alt=""
+                                     onerror="this.src='/images/default-avatar.svg'">
+                                <div class="notif-body">
+                                    ${text}
+                                    <div class="notif-time">${formatTimeAgo(new Date(n.created_at))}</div>
+                                </div>
+                            </a>`;
+                        }).join("");
+                        list.innerHTML = html;
+
+                        if (unreadIds.length > 0) {
+                            fetch("/notifications/mark-read", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ ids: unreadIds })
+                            }).then(() => fetchUnreadCount());
+                        }
+                    })
+                    .catch(() => {
+                        list.innerHTML = '<div class="notif-empty">Failed to load</div>';
+                    });
+            }
+
+            trigger.addEventListener("click", function(e) {
+                e.stopPropagation();
+                const vis = dropdown.style.display === "block";
+                dropdown.style.display = vis ? "none" : "block";
+                if (!vis) loadNotifications();
+            });
+
+            document.addEventListener("click", function() {
+                dropdown.style.display = "none";
+            });
+
+            dropdown.addEventListener("click", function(e) { e.stopPropagation(); });
+
+            fetchUnreadCount();
+        })();
+    </script>
 </body>
 </html>

@@ -174,7 +174,7 @@ async function dashboard(req, res)
     });
 }
 
-// view all public posts (from all users) in 3-column grid
+// view all public posts (from all users)
 async function publicPosts(req, res) {
     const user_id = req.user.id;
 
@@ -199,6 +199,7 @@ async function publicPosts(req, res) {
                 p.post_id,
                 p.user_id,
                 u.username,
+                MAX(pr.profile_image) AS user_profile_image,
                 p.content,
                 p.image,
                 p.created_at,
@@ -206,6 +207,7 @@ async function publicPosts(req, res) {
                 MAX(CASE WHEN l.user_id = ? THEN 1 ELSE 0 END) AS liked_by_me
             FROM posts p
             JOIN users u ON p.user_id = u.id
+            LEFT JOIN profiles pr ON pr.user_id = p.user_id
             LEFT JOIN likes l ON l.post_id = p.post_id
             WHERE u.account_type = 'public'
             GROUP BY
@@ -244,9 +246,11 @@ async function publicPosts(req, res) {
                     c.post_id,
                     c.comment_text,
                     c.created_at,
-                    u.username
+                    u.username,
+                    pr.profile_image AS user_profile_image
                 FROM comments c
                 JOIN users u ON c.user_id = u.id
+                LEFT JOIN profiles pr ON pr.user_id = c.user_id
                 WHERE c.post_id IN (${placeholders})
                 ORDER BY c.created_at ASC
             `;

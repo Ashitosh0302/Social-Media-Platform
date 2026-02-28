@@ -24,18 +24,35 @@ async function dashboard(req, res)
             full_name: (rawProfile && rawProfile.full_name) ? rawProfile.full_name : ""
         };
 
-        const user = {
-            ...req.user,
-            posts_count: (rawProfile && rawProfile.posts_count != null) ? rawProfile.posts_count : 0,
-            followers_count: (rawProfile && rawProfile.followers_count != null) ? rawProfile.followers_count : 0,
-            following_count: (rawProfile && rawProfile.following_count != null) ? rawProfile.following_count : 0
-        };
+        // live stats so followers/following/posts counts always match DB
+        const statsSql = `
+            SELECT
+                (SELECT COUNT(*) FROM posts WHERE user_id = ?) AS posts_count,
+                (SELECT COUNT(*) FROM followers WHERE following_id = ?) AS followers_count,
+                (SELECT COUNT(*) FROM followers WHERE follower_id = ?) AS following_count
+        `;
 
-        // load posts for dashboard feed:
-        // - posts from current user
-        // - posts from people they follow
-        // - posts from all public accounts (instagram-like mixed feed)
-        const postsSql = `
+        db.query(statsSql, [user_id, user_id, user_id], (statsErr, statsResult) =>
+        {
+            if (statsErr)
+            {
+                console.log("Dashboard stats query error:", statsErr);
+                return res.send("Failed to load dashboard");
+            }
+
+            const statsRow = (statsResult && statsResult[0]) || {};
+
+            const user = {
+                ...req.user,
+                posts_count: statsRow.posts_count != null ? statsRow.posts_count : 0,
+                followers_count: statsRow.followers_count != null ? statsRow.followers_count : 0,
+                following_count: statsRow.following_count != null ? statsRow.following_count : 0
+            };
+
+            // load posts for dashboard feed:
+            // - posts from current user
+            // - posts from people they follow (regardless of public/private)
+            const postsSql = `
                 SELECT
                     p.post_id,
                     p.user_id,
@@ -56,7 +73,6 @@ async function dashboard(req, res)
                     ON l.post_id = p.post_id
                 WHERE p.user_id = ?
                    OR f.id IS NOT NULL
-                   OR u.account_type = 'public'
                 GROUP BY
                     p.post_id,
                     p.user_id,
@@ -67,91 +83,92 @@ async function dashboard(req, res)
                 ORDER BY p.created_at DESC
             `;
 
-        db.query(postsSql, [user_id, user_id, user_id], (err2, postsResult) =>
-        {
+            db.query(postsSql, [user_id, user_id, user_id], (err2, postsResult) =>
+            {
             if (err2)
             {
                 console.log("Load posts error:", err2);
                 return res.send("Failed to load posts");
             }
 
-            const posts = postsResult || [];
+                const posts = postsResult || [];
 
-            // helper to also attach unread notification count for badge
-            const renderWithNotifications = (finalPosts, commentsByPost) =>
-            {
-                const notifSql = `
-                    SELECT COUNT(*) AS cnt
-                    FROM notifications
-                    WHERE user_id = ?
-                      AND is_read = 0
-                `;
-
-                db.query(notifSql, [user_id], (notifErr, notifResult) =>
+                // helper to also attach unread notification count for badge
+                const renderWithNotifications = (finalPosts, commentsByPost) =>
                 {
-                    if (notifErr)
+                    const notifSql = `
+                        SELECT COUNT(*) AS cnt
+                        FROM notifications
+                        WHERE user_id = ?
+                          AND is_read = 0
+                    `;
+
+                    db.query(notifSql, [user_id], (notifErr, notifResult) =>
                     {
-                        console.log("Load unread notifications error:", notifErr);
-                    }
+                        if (notifErr)
+                        {
+                            console.log("Load unread notifications error:", notifErr);
+                        }
 
-                    const unreadNotifications =
-                        notifResult && notifResult[0] && notifResult[0].cnt
-                            ? notifResult[0].cnt
-                            : 0;
+                        const unreadNotifications =
+                            notifResult && notifResult[0] && notifResult[0].cnt
+                                ? notifResult[0].cnt
+                                : 0;
 
-                    res.render("dashboard", {
-                        user,
-                        profile,
-                        posts: finalPosts,
-                        commentsByPost,
-                        unreadNotifications
+                        res.render("dashboard", {
+                            user,
+                            profile,
+                            posts: finalPosts,
+                            commentsByPost,
+                            unreadNotifications
+                        });
                     });
-                });
-            };
+                };
 
-            // no posts at all – still render badge + empty feed
-            if (posts.length === 0)
-            {
-                return renderWithNotifications([], {});
-            }
-
-            const postIds = posts.map(p => p.post_id);
-            const placeholders = postIds.map(() => "?").join(",");
-
-            const commentsSql = `
-                SELECT
-                    c.id,
-                    c.post_id,
-                    c.comment_text,
-                    c.created_at,
-                    u.username,
-                    pr.profile_image AS user_profile_image
-                FROM comments c
-                JOIN users u ON c.user_id = u.id
-                LEFT JOIN profiles pr ON pr.user_id = c.user_id
-                WHERE c.post_id IN (${placeholders})
-                ORDER BY c.created_at ASC
-            `;
-
-            db.query(commentsSql, postIds, (err3, commentsResult) =>
-            {
-                if (err3)
+                // no posts at all – still render badge + empty feed
+                if (posts.length === 0)
                 {
-                    console.log("Load comments error:", err3);
-                    return res.send("Failed to load comments");
+                    return renderWithNotifications([], {});
                 }
 
-                const commentsByPost = {};
-                (commentsResult || []).forEach(row =>
-                {
-                    if (!commentsByPost[row.post_id])
-                    {
-                        commentsByPost[row.post_id] = [];
-                    }
-                    commentsByPost[row.post_id].push(row);
-                });
+                const postIds = posts.map(p => p.post_id);
+                const placeholders = postIds.map(() => "?").join(",");
 
-                renderWithNotifications(posts, commentsByPost);
+                const commentsSql = `
+                    SELECT
+                        c.id,
+                        c.post_id,
+                        c.comment_text,
+                        c.created_at,
+                        u.username,
+                        pr.profile_image AS user_profile_image
+                    FROM comments c
+                    JOIN users u ON c.user_id = u.id
+                    LEFT JOIN profiles pr ON pr.user_id = c.user_id
+                    WHERE c.post_id IN (${placeholders})
+                    ORDER BY c.created_at ASC
+                `;
+
+                db.query(commentsSql, postIds, (err3, commentsResult) =>
+                {
+                    if (err3)
+                    {
+                        console.log("Load comments error:", err3);
+                        return res.send("Failed to load comments");
+                    }
+
+                    const commentsByPost = {};
+                    (commentsResult || []).forEach(row =>
+                    {
+                        if (!commentsByPost[row.post_id])
+                        {
+                            commentsByPost[row.post_id] = [];
+                        }
+                        commentsByPost[row.post_id].push(row);
+                    });
+
+                    renderWithNotifications(posts, commentsByPost);
+                });
             });
         });
     });

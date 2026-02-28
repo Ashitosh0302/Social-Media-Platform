@@ -56,34 +56,50 @@ async function profilePage(req, res) {
                 return res.send("Failed to load profile");
             }
 
-            const profile = row
-                ? {
-                    profile_image: row.profile_image || "default.png",
-                    full_name: row.full_name || "",
-                    posts_count: (row.posts_count != null) ? row.posts_count : 0,
-                    followers_count: (row.followers_count != null) ? row.followers_count : 0,
-                    following_count: (row.following_count != null) ? row.following_count : 0
+            // live follower/following counts so they always match the followers table
+            const statsSql = `
+                SELECT
+                    (SELECT COUNT(*) FROM followers WHERE following_id = ?) AS followers_count,
+                    (SELECT COUNT(*) FROM followers WHERE follower_id = ?) AS following_count
+            `;
+
+            db.query(statsSql, [user_id, user_id], (statsErr, statsResult) => {
+                if (statsErr) {
+                    console.log("Profile stats query error:", statsErr);
+                    return res.send("Failed to load profile");
                 }
-                : {
-                    profile_image: "default.png",
-                    full_name: "",
-                    posts_count: 0,
-                    followers_count: 0,
-                    following_count: 0
+
+                const statsRow = (statsResult && statsResult[0]) || {};
+
+                const profile = row
+                    ? {
+                        profile_image: row.profile_image || "default.png",
+                        full_name: row.full_name || "",
+                        posts_count: userPosts.length,
+                        followers_count: statsRow.followers_count != null ? statsRow.followers_count : 0,
+                        following_count: statsRow.following_count != null ? statsRow.following_count : 0
+                    }
+                    : {
+                        profile_image: "default.png",
+                        full_name: "",
+                        posts_count: userPosts.length,
+                        followers_count: statsRow.followers_count != null ? statsRow.followers_count : 0,
+                        following_count: statsRow.following_count != null ? statsRow.following_count : 0
+                    };
+
+                const profileUser = {
+                    id: req.user.id,
+                    username: row && row.username ? row.username : req.user.username
                 };
 
-            const profileUser = {
-                id: req.user.id,
-                username: row && row.username ? row.username : req.user.username
-            };
-
-            res.render("profile", {
-                user: req.user,
-                profile,
-                profileUser,
-                isOwner: true,
-                isFollowing: false,
-                userPosts
+                res.render("profile", {
+                    user: req.user,
+                    profile,
+                    profileUser,
+                    isOwner: true,
+                    isFollowing: false,
+                    userPosts
+                });
             });
         });
     });
@@ -135,21 +151,36 @@ async function viewUserProfile(req, res) {
                     return res.send("Failed to load user profile");
                 }
 
-                const profile = {
-                    profile_image: row.profile_image || "default.png",
-                    full_name: row.full_name || "",
-                    posts_count: (row.posts_count != null) ? row.posts_count : 0,
-                    followers_count: (row.followers_count != null) ? row.followers_count : 0,
-                    following_count: (row.following_count != null) ? row.following_count : 0
-                };
+                const statsSql = `
+                    SELECT
+                        (SELECT COUNT(*) FROM followers WHERE following_id = ?) AS followers_count,
+                        (SELECT COUNT(*) FROM followers WHERE follower_id = ?) AS following_count
+                `;
 
-                res.render("profile", {
-                    user: req.user,
-                    profile,
-                    profileUser,
-                    isOwner,
-                    isFollowing,
-                    userPosts
+                db.query(statsSql, [row.id, row.id], (statsErr, statsResult) => {
+                    if (statsErr) {
+                        console.log("Profile stats query error:", statsErr);
+                        return res.send("Failed to load user profile");
+                    }
+
+                    const statsRow = (statsResult && statsResult[0]) || {};
+
+                    const profile = {
+                        profile_image: row.profile_image || "default.png",
+                        full_name: row.full_name || "",
+                        posts_count: userPosts.length,
+                        followers_count: statsRow.followers_count != null ? statsRow.followers_count : 0,
+                        following_count: statsRow.following_count != null ? statsRow.following_count : 0
+                    };
+
+                    res.render("profile", {
+                        user: req.user,
+                        profile,
+                        profileUser,
+                        isOwner,
+                        isFollowing,
+                        userPosts
+                    });
                 });
             });
         });

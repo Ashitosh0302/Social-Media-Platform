@@ -30,57 +30,61 @@ It allows users to register, log in, manage profiles, create posts, and access a
 
 ## 📁 Project Structure
 
-BirdSky/<br>
-├── app.js                    ---------------------------# Main server entry point<br>
-├── package.json              ---------------------------# Project dependencies and scripts<br>
-├── package-lock.json         ---------------------------# Dependency lock file<br>
-├── .env                      ---------------------------# Environment variables<br>
-│<br>
-├── config/                   ---------------------------# Configuration files<br>
-│   └── db.js                 ---------------------------# MySQL database connection<br>
-│<br>
-├── controllers/              ---------------------------# Application logic (controllers)<br>
-│   ├── dashboard.js          ---------------------------# Dashboard logic<br>
-│   ├── home.js               ---------------------------# Home page logic<br>
-│   ├── posts.js              ---------------------------# Post handling logic<br>
-│   ├── profile.js            ---------------------------# Profile logic<br>
-│   ├── user_login.js         ---------------------------# User login logic<br>
-│   └── user_register_login.js---------------------------# User registration logic<br>
-│<br>
-├── routes/                   ---------------------------# Application routes<br>
-│   ├── dashboard.js          ---------------------------# Dashboard routes<br>
-│   ├── home.js               ---------------------------# Home routes<br>
-│   ├── posts.js              ---------------------------# Post routes<br>
-│   ├── profile.js            ---------------------------# Profile routes<br>
-│   ├── user_login.js         ---------------------------# Login routes<br>
-│   └── user_register_login.js---------------------------# Register routes<br>
-│<br>
-├── middlewares/              ---------------------------# Custom middleware<br>
-│   ├── authMiddleware.js     ---------------------------# JWT authentication middleware<br>
-│   └── upload.js             ---------------------------# File upload middleware<br>
-│<br>
-├── models/                   ---------------------------# Database models<br>
-│   └── user.js               ---------------------------# User model<br>
-│<br>
-├── db/                       ---------------------------# Database utilities<br>
-│   └── recommended-indexes.sql--------------------------# SQL indexes for optimization<br>
-│<br>
-├── public/                   ---------------------------# Static assets<br>
-│   ├── css/                  ---------------------------# Stylesheets<br>
-│   ├── js/                   ---------------------------# Client-side JavaScript<br>
-│   └── images/               ---------------------------# Images<br>
-│<br>
-└── views/                    ---------------------------# EJS templates<br>
-    ├── partials/             ---------------------------# Reusable UI components<br>
-    │   ├── head.ejs<br>
-    │   └── nav.ejs<br>
-    ├── home.ejs              ---------------------------# Home page<br>
-    ├── login.ejs             ---------------------------# Login page<br>
-    ├── register.ejs          ---------------------------# Register page<br>
-    ├── dashboard.ejs         ---------------------------# Dashboard page<br>
-    └── profile.ejs           ---------------------------# Profile page<br>
-
----
+```bash
+BirdSky/
+│
+├── app.js                          # Main server entry point
+├── package.json                    # Project dependencies and scripts
+├── package-lock.json               # Dependency lock file
+├── .env                            # Environment variables
+│
+├── config/                         # Configuration files
+│   └── db.js                       # MySQL database connection
+│
+├── controllers/                    # Application logic (controllers)
+│   ├── dashboard.js                # Dashboard logic
+│   ├── home.js                     # Home page logic
+│   ├── posts.js                    # Post handling logic
+│   ├── profile.js                  # Profile logic
+│   ├── user_login.js               # User login logic
+│   └── user_register_login.js      # User registration logic
+│
+├── routes/                         # Application routes
+│   ├── dashboard.js                # Dashboard routes
+│   ├── home.js                     # Home routes
+│   ├── posts.js                    # Post routes
+│   ├── profile.js                  # Profile routes
+│   ├── user_login.js               # Login routes
+│   └── user_register_login.js      # Register routes
+│
+├── middlewares/                    # Custom middleware
+│   ├── authMiddleware.js           # JWT authentication middleware
+│   └── upload.js                   # File upload middleware
+│
+├── models/                         # Database models
+│   └── user.js                     # User model
+│
+├── db/                             # Database utilities
+│   └── recommended-indexes.sql     # SQL indexes for optimization
+│
+├── public/                         # Static assets
+│   ├── css/                        # Stylesheets
+│   │   └── style.css
+│   ├── js/                         # Client-side JavaScript
+│   │   └── main.js
+│   └── images/                     # Images
+│       └── (image files)
+│
+└── views/                          # EJS templates
+    ├── partials/                    # Reusable UI components
+    │   ├── head.ejs
+    │   └── nav.ejs
+    ├── home.ejs                     # Home page
+    ├── login.ejs                    # Login page
+    ├── register.ejs                 # Register page
+    ├── dashboard.ejs                # Dashboard page
+    └── profile.ejs                  # Profile page
+```
 
 ## 🧪 Testing Strategy
 

@@ -212,12 +212,15 @@ async function toggleFollow(req, res) {
         } else {
             const insSql = "INSERT INTO followers (follower_id, following_id) VALUES (?, ?)";
             db.query(insSql, [follower_id, following_id], (err2) => {
-                if (err2) console.log("Follow insert error:", err2);
-                else {
-                    // notify the followed user that someone followed them
-                    const notifSql = "INSERT INTO notifications (user_id, actor_id, type) VALUES (?, ?, 'new_follower')";
-                    db.query(notifSql, [following_id, follower_id]);
+                if (err2) {
+                    console.error("Follow insert error:", err2.code, err2.sqlMessage);
+                    if (err2.code === "ER_NO_SUCH_TABLE") {
+                        return res.status(500).send("Database setup incomplete. Run the SQL in db/create-followers-table.sql on your database, then try again.");
+                    }
+                    return res.status(500).send("Could not save follow. Please try again.");
                 }
+                const notifSql = "INSERT INTO notifications (user_id, actor_id, type) VALUES (?, ?, 'new_follower')";
+                db.query(notifSql, [following_id, follower_id], () => {});
                 res.redirect("/profile/" + following_id);
             });
         }

@@ -194,7 +194,28 @@ async function publicPosts(req, res) {
             ? profileResult[0]
             : { profile_image: "default.png" };
 
-        const postsSql = `
+        // Live stats for sidebar (posts, followers, following)
+        const statsSql = `
+            SELECT
+                (SELECT COUNT(*) FROM posts WHERE user_id = ?) AS posts_count,
+                (SELECT COUNT(*) FROM followers WHERE following_id = ?) AS followers_count,
+                (SELECT COUNT(*) FROM followers WHERE follower_id = ?) AS following_count
+        `;
+
+        db.query(statsSql, [user_id, user_id, user_id], (statsErr, statsResult) => {
+            if (statsErr) {
+                console.log("Public posts stats error:", statsErr);
+            }
+
+            const statsRow = (statsResult && statsResult[0]) || {};
+            const user = {
+                ...req.user,
+                posts_count: statsRow.posts_count != null ? statsRow.posts_count : 0,
+                followers_count: statsRow.followers_count != null ? statsRow.followers_count : 0,
+                following_count: statsRow.following_count != null ? statsRow.following_count : 0
+            };
+
+            const postsSql = `
             SELECT
                 p.post_id,
                 p.user_id,
@@ -230,7 +251,7 @@ async function publicPosts(req, res) {
 
             if (posts.length === 0) {
                 return res.render("public-posts", {
-                    user: req.user,
+                    user,
                     profile,
                     posts: [],
                     commentsByPost: {}
@@ -270,12 +291,13 @@ async function publicPosts(req, res) {
                 });
 
                 res.render("public-posts", {
-                    user: req.user,
+                    user,
                     profile,
                     posts,
                     commentsByPost
                 });
             });
+        });
         });
     });
 }

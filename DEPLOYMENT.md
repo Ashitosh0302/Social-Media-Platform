@@ -18,7 +18,9 @@ Set these in your deployment platform (Render, Heroku, Railway, etc.):
 ## Database Setup
 
 1. Run all SQL scripts in the `db/` folder on your production database:
-   - Create `users`, `profiles`, `posts`, `likes`, `comments`, `followers`, `notifications` tables
+   - **create-followers-table.sql** – required for follow/unfollow (if you see "0 Followers" or follow button fails, run this)
+   - **create-notifications-table.sql**
+   - Ensure `users`, `profiles`, `posts`, `likes`, `comments` tables exist (from your initial setup)
 2. Ensure the database name in `DB_NAME` matches where you created the tables.
 
 ## Image Storage (Important for Deploy)
@@ -52,8 +54,10 @@ Set these in your deployment platform (Render, Heroku, Railway, etc.):
 
 | Issue | Fix |
 |-------|-----|
-| "User registration failed" | Check env vars are set. Check DB tables exist. View platform logs for `Registration DB error`. |
-| "Database connection failed" | Verify DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME. Whitelist deploy platform IP if your DB requires it. |
-| Posts not saving | Same as above. Ensure `posts` table exists. |
-| Images not loading | Uploads are ephemeral - use cloud storage (Cloudinary/S3). Or verify `public/uploads` path. |
-| 404 on /uploads/* | Ensure `public/uploads` exists. The app creates it at startup. |
+| "0 Followers / 0 Following" always | Run `db/create-followers-table.sql` on your database. |
+| "User registration failed" | Check env vars. Ensure `users` and `profiles` tables exist. Check logs for `Registration DB error`. |
+| Follow button does nothing / "Database setup incomplete" | Run `db/create-followers-table.sql` on your database. |
+| "Database connection failed" | Verify DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME. Whitelist deploy platform IP if required. |
+| Posts not saving | Ensure `posts` table exists. Check logs. |
+| Post images blank / not loading | Set `CLOUDINARY_URL` (Render filesystem is ephemeral – images are lost on restart without Cloudinary). |
+| 404 on /uploads/* | Set `CLOUDINARY_URL` for persistent images, or images are lost on deploy. |

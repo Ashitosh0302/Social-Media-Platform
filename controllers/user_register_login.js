@@ -31,6 +31,8 @@ async function registerUser(req, res)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
+        const accountType = (account_type === "public" || account_type === "private") ? account_type : "private";
+
         db.query(
             userSql,
             [
@@ -40,14 +42,20 @@ async function registerUser(req, res)
                 phone_number || null,
                 date_of_birth || null,
                 gender || null,
-                account_type
+                accountType
             ],
             (err, userResult) =>
             {
                 if (err)
                 {
-                    console.error(err);
-                    return res.send("User registration failed");
+                    console.error("Registration DB error:", err.code, err.sqlMessage);
+                    if (err.code === "ER_DUP_ENTRY") {
+                        return res.status(400).send("Email or username already in use. Please try another.");
+                    }
+                    if (err.code === "ER_NO_SUCH_TABLE") {
+                        return res.status(500).send("Database not configured. Please run the SQL scripts in the db/ folder on your database.");
+                    }
+                    return res.status(500).send("User registration failed. Please try again.");
                 }
 
                 const user_id = userResult.insertId;
@@ -57,14 +65,13 @@ async function registerUser(req, res)
                     VALUES (?, ?)
                 `;
 
-                db.query(profileSql, [user_id, full_name], (err2) =>
+                db.query(profileSql, [user_id, full_name || ""], (err2) =>
                 {
                     if (err2)
                     {
-                        console.error(err2);
-                        return res.send("Profile creation failed");
+                        console.error("Profile creation error:", err2.code, err2.sqlMessage);
+                        return res.status(500).send("Profile creation failed. Please try again.");
                     }
-
                     res.redirect("/");
                 });
             }

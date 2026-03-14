@@ -1,5 +1,12 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+const uploadsPath = path.join(__dirname, "..", "public", "uploads");
+
+if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+}
 
 const ALLOWED_MIME_TYPES = new Set([
     "image/jpeg",
@@ -8,21 +15,23 @@ const ALLOWED_MIME_TYPES = new Set([
     "image/gif"
 ]);
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) =>
-    {
-        cb(null, "public/uploads");
+// Use memory storage when Cloudinary is configured (for deploy - persistent images)
+const useCloudinary = !!process.env.CLOUDINARY_URL;
+
+const diskStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsPath);
     },
-    filename: (req, file, cb) =>
-    {
-        const ext = path.extname(file.originalname || "").toLowerCase();
-        const uniqueName = Date.now() + ext;
-        cb(null, uniqueName);
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname || "").toLowerCase() || ".jpg";
+        cb(null, Date.now() + ext);
     }
 });
 
+const storage = useCloudinary ? multer.memoryStorage() : diskStorage;
+
 const upload = multer({
-    storage: storage,
+    storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB
     },

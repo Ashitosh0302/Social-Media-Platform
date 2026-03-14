@@ -462,7 +462,7 @@
             <!-- PROFILE HEADER -->
             <div class="profile-header">
                 <div class="profile-avatar-wrap">
-                    <img src="<%= profile && profile.profile_image ? '/uploads/' + profile.profile_image : '/images/default-avatar.svg' %>"
+                    <img src="<%= imageSrc(profile && profile.profile_image, '/images/default-avatar.svg') %>"
                          alt="Profile"
                          onerror="this.src='/images/default-avatar.svg'" />
                 </div>
@@ -534,7 +534,7 @@
                             <div class="post-card">
                                 <div class="post-thumb">
                                     <% if (post.image) { %>
-                                        <img src="/uploads/<%= post.image %>" alt="Post" loading="lazy" />
+                                        <img src="<%= imageSrc(post.image) %>" alt="Post" loading="lazy" />
                                     <% } else { %>
                                         <span class="no-img">No image</span>
                                     <% } %>

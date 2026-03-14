@@ -1,8 +1,9 @@
 const express=require("express")
 const router=express.Router()
 
-const authMiddleware=require("../middlewares/authMiddleware")
-const upload=require("../middlewares/upload")
+const authMiddleware = require("../middlewares/authMiddleware");
+const upload = require("../middlewares/upload");
+const uploadToCloudinary = require("../middlewares/uploadCloudinary");
 const {
     profilePage,
     viewUserProfile,
@@ -20,7 +21,7 @@ router.get("/",authMiddleware,profilePage)
 router.get("/search", authMiddleware, searchUsers)
 
 // upload/change own profile image
-router.post("/upload", authMiddleware, upload.single("profile_image"), updateProfileImage);
+router.post("/upload", authMiddleware, upload.single("profile_image"), uploadToCloudinary, updateProfileImage);
 
 // follow/unfollow user (toggle)
 router.post("/:id/follow", authMiddleware, toggleFollow)

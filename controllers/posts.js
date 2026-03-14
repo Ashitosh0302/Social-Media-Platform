@@ -7,7 +7,9 @@ const MAX_COMMENT_LENGTH = 500;
 async function createPost(req, res) {
     const user_id = req.user.id;
     let content = (req.body.content || "").trim();
-    const image = req.file ? req.file.filename : null;
+    const image = req.file
+        ? (req.file.imageUrl || (req.file.filename ? req.file.filename : null))
+        : null;
 
     if (content.length > MAX_POST_LENGTH) {
         content = content.slice(0, MAX_POST_LENGTH);
@@ -24,8 +26,11 @@ async function createPost(req, res) {
 
     db.query(sql, [user_id, content, image], (err, result) => {
         if (err) {
-            console.log("Create post error:", err);
-            return res.send("Failed to create post");
+            console.error("Create post error:", err.code, err.sqlMessage);
+            if (err.code === "ER_NO_SUCH_TABLE") {
+                return res.status(500).send("Database not configured. Please run the SQL scripts in the db/ folder.");
+            }
+            return res.status(500).send("Failed to create post. Please try again.");
         }
 
         const post_id = result && result.insertId;

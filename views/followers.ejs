@@ -80,7 +80,7 @@
             <% people.forEach(function(p) { %>
                 <li class="person-item">
                     <a href="/profile/<%= p.id %>">
-                        <img src="/uploads/<%= p.profile_image %>" alt="">
+                        <img src="<%= imageSrc(p.profile_image, '/images/default-avatar.svg') %>" alt="">
                         <span class="username"><%= p.username %></span>
                     </a>
                 </li>

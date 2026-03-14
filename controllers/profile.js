@@ -387,7 +387,7 @@ async function updateProfileImage(req, res) {
     console.log("req.user.id:", req.user?.id);
 
     const user_id = req.user.id;
-    const image = req.file && req.file.filename;
+    const image = req.file && (req.file.imageUrl || req.file.filename);
 
     if (!image) {
         return res.send("No image uploaded");

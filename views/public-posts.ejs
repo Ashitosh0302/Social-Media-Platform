@@ -633,7 +633,7 @@
     <div class="container">
         <div class="sidebar">
             <div class="profile-box">
-                <img src="<%= profile && profile.profile_image ? '/uploads/' + profile.profile_image : '/images/default-avatar.svg' %>"
+                <img src="<%= imageSrc(profile && profile.profile_image, '/images/default-avatar.svg') %>"
                     alt="Profile"
                     onerror="this.src='/images/default-avatar.svg'" />
 
@@ -696,7 +696,7 @@
                         <% posts.forEach(function(post) { %>
                             <div class="post">
                                 <div class="post-header">
-                                    <img src="<%= post.user_profile_image ? '/uploads/' + post.user_profile_image : '/images/default-avatar.svg' %>"
+                                    <img src="<%= imageSrc(post.user_profile_image, '/images/default-avatar.svg') %>"
                                          alt="<%= post.username %>"
                                          class="post-avatar"
                                          onerror="this.src='/images/default-avatar.svg'">
@@ -720,7 +720,7 @@
 
                                 <% if (post.image) { %>
                                     <div class="post-image-container">
-                                        <img src="/uploads/<%= post.image %>"
+                                        <img src="<%= imageSrc(post.image) %>"
                                              alt="Post image"
                                              loading="lazy"
                                              onerror="this.src='/images/default-post.png'">
@@ -744,7 +744,7 @@
                                     <% if (comments.length > 0) { %>
                                         <% comments.slice(0, 2).forEach(function(c) { %>
                                             <div class="comment">
-                                                <img src="<%= c.user_profile_image ? '/uploads/' + c.user_profile_image : '/images/default-avatar.svg' %>"
+                                                <img src="<%= imageSrc(c.user_profile_image, '/images/default-avatar.svg') %>"
                                                      alt="<%= c.username %>"
                                                      class="comment-avatar"
                                                      onerror="this.src='/images/default-avatar.svg'">
@@ -793,7 +793,7 @@
 
                 const html = users.map(user => `
                     <a class="search-result-item" href="/profile/${user.id}">
-                        <img src="${user.profile_image ? '/uploads/' + user.profile_image : '/images/default-avatar.svg'}"
+                        <img src="${user.profile_image ? (user.profile_image.startsWith('http') ? user.profile_image : '/uploads/' + user.profile_image) : '/images/default-avatar.svg'}"
                              alt="${user.username}"
                              onerror="this.src='/images/default-avatar.svg'">
                         <span>${user.username}</span>
@@ -882,7 +882,7 @@
                                 : "<strong>" + (n.actor_username || "Someone") + "</strong> started following you.";
                             const itemClass = "notif-item" + (n.is_read ? "" : " unread");
                             return `<a class="${itemClass}" href="${n.type === 'new_post' ? '/dashboard' : '/profile/' + n.actor_id}">
-                                <img src="${n.actor_profile_image ? '/uploads/' + n.actor_profile_image : '/images/default-avatar.svg'}"
+                                <img src="${n.actor_profile_image ? (n.actor_profile_image.startsWith('http') ? n.actor_profile_image : '/uploads/' + n.actor_profile_image) : '/images/default-avatar.svg'}"
                                      alt=""
                                      onerror="this.src='/images/default-avatar.svg'">
                                 <div class="notif-body">

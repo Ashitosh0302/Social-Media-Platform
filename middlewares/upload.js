@@ -2,10 +2,10 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const uploadsPath = path.join(__dirname, "..", "public", "uploads");
+const imagesPath = path.join(__dirname, "..", "public", "images");
 
-if (!fs.existsSync(uploadsPath)) {
-    fs.mkdirSync(uploadsPath, { recursive: true });
+if (!fs.existsSync(imagesPath)) {
+    fs.mkdirSync(imagesPath, { recursive: true });
 }
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -20,7 +20,7 @@ const useCloudinary = !!process.env.CLOUDINARY_URL;
 
 const diskStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadsPath);
+        cb(null, imagesPath);
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname || "").toLowerCase() || ".jpg";

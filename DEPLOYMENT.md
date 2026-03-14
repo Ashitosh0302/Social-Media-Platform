@@ -60,4 +60,4 @@ Set these in your deployment platform (Render, Heroku, Railway, etc.):
 | "Database connection failed" | Verify DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME. Whitelist deploy platform IP if required. |
 | Posts not saving | Ensure `posts` table exists. Check logs. |
 | Post images blank / not loading | Set `CLOUDINARY_URL` (Render filesystem is ephemeral – images are lost on restart without Cloudinary). |
-| 404 on /uploads/* | Set `CLOUDINARY_URL` for persistent images, or images are lost on deploy. |
+| 404 on /images/* | Set `CLOUDINARY_URL` for persistent images on deploy; or images stored in public/images may be lost on restart. |

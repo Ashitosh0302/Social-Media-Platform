@@ -7,28 +7,27 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3020;
 
-// Ensure uploads directory exists (required for deploy - dir may not exist on first deploy)
-const uploadsDir = path.join(__dirname, "public", "uploads");
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log("Created uploads directory:", uploadsDir);
+// Ensure public/images exists for uploaded images (used by multer when not using Cloudinary)
+const imagesDir = path.join(__dirname, "public", "images");
+if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+    console.log("Created images directory:", imagesDir);
 }
 
 // View engine
 app.set("view engine", "ejs");
 
-// Helper for image URLs (handles Cloudinary full URLs vs local /uploads/ path)
+// Helper for image URLs (handles Cloudinary full URLs vs local /images/ path)
 app.locals.imageSrc = (imgPath, defaultPath) => {
     if (!imgPath) return defaultPath || "/images/default-avatar.svg";
     if (String(imgPath).startsWith("http")) return imgPath;
-    return "/uploads/" + imgPath;
+    return "/images/" + imgPath;
 };
 
 // Middlewares - use absolute paths for deploy
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "public", "uploads")));
 app.use(cookieParser());
 
 //routes

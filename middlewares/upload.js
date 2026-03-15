@@ -16,7 +16,11 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 // Use memory storage when Cloudinary is configured (for deploy - persistent images)
-const useCloudinary = !!process.env.CLOUDINARY_URL;
+const useCloudinary =
+    !!process.env.CLOUDINARY_URL ||
+    (!!process.env.CLOUDINARY_CLOUD_NAME &&
+        !!process.env.CLOUDINARY_API_KEY &&
+        !!process.env.CLOUDINARY_API_SECRET);
 
 const diskStorage = multer.diskStorage({
     destination: (req, file, cb) => {

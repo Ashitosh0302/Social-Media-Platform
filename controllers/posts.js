@@ -125,9 +125,39 @@ async function addComment(req, res) {
     });
 }
 
+// delete a post
+async function deletePost(req, res) {
+    const user_id = req.user.id;
+    const post_id = parseInt(req.params.id, 10);
+
+    if (!Number.isInteger(post_id) || post_id <= 0) {
+        return res.redirect(req.get('Referer') || '/dashboard');
+    }
+
+    // Verify ownership
+    const checkSql = "SELECT post_id FROM posts WHERE post_id = ? AND user_id = ?";
+    db.query(checkSql, [post_id, user_id], (err, results) => {
+        if (err || results.length === 0) {
+            return res.redirect(req.get('Referer') || '/dashboard');
+        }
+
+        // Sequential deletes to ensure no orphaned relational rows
+        db.query("DELETE FROM comments WHERE post_id = ?", [post_id], () => {
+            db.query("DELETE FROM likes WHERE post_id = ?", [post_id], () => {
+                db.query("DELETE FROM notifications WHERE type = 'new_post' AND ref_id = ?", [post_id], () => {
+                    db.query("DELETE FROM posts WHERE post_id = ?", [post_id], () => {
+                        res.redirect(req.get('Referer') || '/dashboard');
+                    });
+                });
+            });
+        });
+    });
+}
+
 module.exports = {
     createPost,
     toggleLike,
-    addComment
+    addComment,
+    deletePost
 };
 
